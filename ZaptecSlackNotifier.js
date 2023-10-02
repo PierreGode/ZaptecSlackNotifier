@@ -9,6 +9,8 @@ const SLACK_TOKEN = 'your_slack_token_here';
 const slackClient = new WebClient(SLACK_TOKEN);
 const SLACK_CHANNEL = 'your_slack_channel_id';
 
+let previousChargerStatuses = {};  // To store previous statuses of chargers
+
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
     const encodedCredentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
@@ -44,10 +46,14 @@ async function checkChargerAvailability() {
         console.log(`Found ${chargers.length} chargers.`);
 
         for (let charger of chargers) {
-            if (charger.OperatingMode == 1) {
-                const message = `Charger ${charger.Id} is available!`;
-                console.log(message); // Log to console
-                await notifySlack(message); // Send to Slack
+            const previousStatus = previousChargerStatuses[charger.Id];
+            if (previousStatus !== charger.OperatingMode) {
+                if (charger.OperatingMode == 1) {
+                    const message = `Charger ${charger.Id} is available!`;
+                    console.log(message);  // Output to log
+                    await notifySlack(message);
+                }
+                previousChargerStatuses[charger.Id] = charger.OperatingMode;
             }
         }
     } catch (error) {
@@ -56,6 +62,12 @@ async function checkChargerAvailability() {
 }
 
 async function notifySlack(message) {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 17 || currentHour < 6) {
+        console.log("Current time is between 17:00 and 06:00. Not sending Slack notification:", message);
+        return;
+    }
+
     try {
         await slackClient.chat.postMessage({
             channel: SLACK_CHANNEL,
