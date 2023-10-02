@@ -27,6 +27,8 @@ USERNAME: Your Zaptec username.
 PASSWORD: Your Zaptec password.
 ```
 Slack Configuration: These details allow you to send messages to your Slack workspace.
+
+Slack application is required.
 ```
 SLACK_TOKEN: Your Slack API token. You can get this from Slack API.
 SLACK_CHANNEL: The Slack channel ID where the notifications should be sent.
