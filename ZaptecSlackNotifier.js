@@ -45,17 +45,18 @@ async function checkChargerAvailability() {
         const chargers = response.data.Data;
         console.log(`Found ${chargers.length} chargers.`);
 
-        for (let charger of chargers) {
-            const previousStatus = previousChargerStatuses[charger.Id];
-            if (previousStatus !== charger.OperatingMode) {
-                if (charger.OperatingMode == 1) {
-                    const message = `Charger ${charger.Id} is available!`;
-                    console.log(message);  // Output to log
-                    await notifySlack(message);
-                }
-                previousChargerStatuses[charger.Id] = charger.OperatingMode;
-            }
+for (let charger of chargers) {
+    const previousStatus = previousChargerStatuses[charger.Id];
+    if (previousStatus !== charger.OperatingMode) {
+        if (charger.OperatingMode == 1) {
+            const message = `Charger "${charger.Name}" is available!`;  // Changed this line
+            console.log(message);  // Output to log
+            await notifySlack(message);
         }
+        previousChargerStatuses[charger.Id] = charger.OperatingMode;
+    }
+}
+
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
     }
