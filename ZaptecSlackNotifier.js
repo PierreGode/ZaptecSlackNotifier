@@ -24,6 +24,7 @@ async function rotateSlackToken() {
                 refresh_token: SLACK_REFRESH_TOKEN,
             });
             slackClient.token = refreshedTokenData.access_token;
+            console.log("Successfully refreshed Slack refresh token.");
         }
     } catch (error) {
         console.error("Failed to rotate Slack token:", error);
@@ -44,9 +45,9 @@ async function refreshBearerToken() {
         });
 
         bearerToken = response.data.access_token;
-        console.log("Successfully refreshed bearer token.");
+        console.log("Successfully refreshed Zapetc bearer token.");
     } catch (error) {
-        console.error("Failed to refresh token:", error);
+        console.error("Failed to refresh Zapetc token:", error);
     }
 }
 
