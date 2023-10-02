@@ -43,9 +43,9 @@ async function refreshBearerToken() {
         });
 
         bearerToken = response.data.access_token;
-        console.log("Successfully refreshed bearer token.");
+        console.log("Successfully refreshed Zaptec bearer token.");
     } catch (error) {
-        console.error("Failed to refresh token:", error);
+        console.error("Failed to refresh Zaptec     token:", error);
     }
 }
 
