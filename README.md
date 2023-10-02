@@ -40,7 +40,8 @@ Once you've set up the configurations, run the notifier using:
 ```
 node node.js
 ```
-ZaptecSlackNotifier will send notifications about a charger when it becomes available, updates are pulled every 5 minuted but notification will not be repeated until status is changed.
+ZaptecSlackNotifier will send notifications about a charger when it becomes available, updates are pulled every 5 minutes but notifications will not be repeated until the status is changed.
+notifocation is only sent when OperatingMode == 1 and 1 = Charger is available!
 Notifications are silenced after work hours 17-06.
 
 
