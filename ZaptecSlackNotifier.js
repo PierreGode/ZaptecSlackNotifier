@@ -1,15 +1,34 @@
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
 
+// You can set this initially for the very first run, but subsequently the token 
+// will be refreshed and updated dynamically.
+const INITIAL_SLACK_TOKEN = 'your_slack_token_here'; // <<< Static first-time token
+
+const SLACK_REFRESH_TOKEN = 'your_slack_refresh_token_here';
+const SLACK_CHANNEL = 'your_slack_channel_id';
+
+const slackClient = new WebClient(INITIAL_SLACK_TOKEN);
+
 const USERNAME = "your_username_here";
 const PASSWORD = "your_password_here";
 let bearerToken;
 
-// This is your initial static Slack token. If Slack's token expires, you can rotate it using the provided refresh token.
-const SLACK_TOKEN = 'your_slack_token_here';
-const slackClient = new WebClient(SLACK_TOKEN);
-const SLACK_CHANNEL = 'your_slack_channel_id';
-const SLACK_REFRESH_TOKEN = 'your_slack_refresh_token_here';
+async function rotateSlackToken() {
+    try {
+        const result = await slackClient.auth.revoke();
+        if (result.ok) {
+            const refreshedTokenData = await slackClient.oauth.v2.access({
+                client_id: 'YOUR_SLACK_CLIENT_ID',
+                client_secret: 'YOUR_SLACK_CLIENT_SECRET',
+                refresh_token: SLACK_REFRESH_TOKEN,
+            });
+            slackClient.token = refreshedTokenData.access_token;
+        }
+    } catch (error) {
+        console.error("Failed to rotate Slack token:", error);
+    }
+}
 
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
@@ -49,9 +68,7 @@ async function checkChargerAvailability() {
             if (charger.OperatingMode == 1) {
                 const message = `Charger ${charger.Name} is available!`;
                 console.log(message); // Log to console
-                if (!isSilentHours()) {
-                    await notifySlack(message); // Send to Slack
-                }
+                await notifySlack(message); // Send to Slack
             }
         }
     } catch (error) {
@@ -60,35 +77,19 @@ async function checkChargerAvailability() {
 }
 
 async function notifySlack(message) {
-    try {
-        await slackClient.chat.postMessage({
-            channel: SLACK_CHANNEL,
-            text: message
-        });
-        console.log("Sent Slack notification:", message);
-    } catch (error) {
-        console.error("Failed to send Slack notification:", error);
-    }
-}
-
-function isSilentHours() {
     const currentHour = new Date().getHours();
-    return currentHour >= 17 || currentHour < 6;
-}
-
-async function rotateSlackToken() {
-    try {
-        const newTokenData = await slackClient.oauth.v2.access({
-            client_id: 'YOUR_SLACK_CLIENT_ID',
-            client_secret: 'YOUR_SLACK_CLIENT_SECRET',
-            grant_type: 'refresh_token',
-            refresh_token: SLACK_REFRESH_TOKEN
-        });
-
-        slackClient.token = newTokenData.access_token;
-        console.log("Successfully rotated Slack token.");
-    } catch (error) {
-        console.error("Failed to rotate Slack token:", error);
+    if (currentHour >= 6 && currentHour < 17) {
+        try {
+            await slackClient.chat.postMessage({
+                channel: SLACK_CHANNEL,
+                text: message
+            });
+            console.log("Sent Slack notification:", message);
+        } catch (error) {
+            console.error("Failed to send Slack notification:", error);
+        }
+    } else {
+        console.log("Outside notification hours. Skipping Slack notification.");
     }
 }
 
