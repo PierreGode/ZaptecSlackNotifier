@@ -4,6 +4,9 @@ Send notifications of availible Zaptec chargers that are availible in your Zapte
 Prerequisites
 Before you proceed, ensure you have the following:
 ```
+sudo apt-get install npm
+```
+```
 npm install axios @slack/web-api
 ```
 Node.js & npm: This is the runtime environment for executing JavaScript code server-side.
