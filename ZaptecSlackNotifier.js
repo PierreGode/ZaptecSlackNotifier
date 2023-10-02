@@ -13,8 +13,10 @@ const slackClient = new WebClient(INITIAL_SLACK_TOKEN);
 let previousChargerStatuses = {};
 
 async function rotateSlackToken() {
+    console.log("Attempting to rotate Slack token...");
     try {
         const result = await slackClient.auth.revoke();
+        console.log("Revoke result:", result);
         if (result.ok) {
             const refreshedTokenData = await slackClient.oauth.v2.access({
                 client_id: 'YOUR_SLACK_CLIENT_ID',
