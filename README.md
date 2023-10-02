@@ -33,7 +33,6 @@ Slack application is required.
 SLACK_TOKEN: Your Slack API token. You can get this from Slack API.
 SLACK_CHANNEL: The Slack channel ID where the notifications should be sent.
 ```
-Update the placeholders ('your_username_here', 'your_password_here', etc.) in the node.js file with the actual values.
 
 Running the Notifier
 Once you've set up the configurations, run the notifier using:
