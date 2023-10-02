@@ -1,8 +1,8 @@
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
 
-const USERNAME = "your_username_here";
-const PASSWORD = "your_password_here";
+const USERNAME = "your_Zaptec_user_here";
+const PASSWORD = "your_Zaptec_password_here";
 let bearerToken;
 
 const INITIAL_SLACK_TOKEN = 'your_slack_token_here'; // Static first-time token
@@ -22,6 +22,7 @@ async function rotateSlackToken() {
                 refresh_token: SLACK_REFRESH_TOKEN,
             });
             slackClient.token = refreshedTokenData.access_token;
+            console.log("Successfully rotated Slack token.");
         }
     } catch (error) {
         console.error("Failed to rotate Slack token:", error);
@@ -65,11 +66,9 @@ async function checkChargerAvailability() {
         for (let charger of chargers) {
             const previousStatus = previousChargerStatuses[charger.Id];
             if (previousStatus !== charger.OperatingMode) {
-                if (charger.OperatingMode == 1) {
-                    const message = `Charger "${charger.Name}" is available!`;
-                    console.log(message);
-                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
-                }
+                const message = `Charger "${charger.Name}" is available!`;
+                console.log(message);
+                await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
             }
         }
@@ -97,6 +96,24 @@ async function notifySlack(message) {
         console.error("Failed to send Slack notification:", error);
     }
 }
+
+(async () => {
+    await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
+    await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
+
+    // Check charger availability every 5 minutes
+    setInterval(async () => {
+        await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
+    }, 300000); // 5 minutes
+
+    // Refresh token every 24 hours
+    setInterval(async () => {
+        await refreshBearerToken().catch(err => console.error("Periodic token refresh failed:", err));
+    }, 86400000); // 24 hours
+
+    console.log("Setting up intervals for checking charger availability and token refresh...");
+    console.log("Zaptec Slack Notifier is now running!");
+})();
 
 module.exports = {
     refreshBearerToken,
