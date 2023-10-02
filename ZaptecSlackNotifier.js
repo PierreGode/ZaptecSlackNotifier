@@ -5,11 +5,11 @@ const USERNAME = "your_username_here";
 const PASSWORD = "your_password_here";
 let bearerToken;
 
+// This is your initial static Slack token. If Slack's token expires, you can rotate it using the provided refresh token.
 const SLACK_TOKEN = 'your_slack_token_here';
 const slackClient = new WebClient(SLACK_TOKEN);
 const SLACK_CHANNEL = 'your_slack_channel_id';
-
-let previousChargerStatuses = {};
+const SLACK_REFRESH_TOKEN = 'your_slack_refresh_token_here';
 
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
@@ -46,14 +46,12 @@ async function checkChargerAvailability() {
         console.log(`Found ${chargers.length} chargers.`);
 
         for (let charger of chargers) {
-            const previousStatus = previousChargerStatuses[charger.Id];
-            if (previousStatus !== charger.OperatingMode) {
-                if (charger.OperatingMode == 1) {
-                    const message = `Charger "${charger.Name}" is available!`;
-                    console.log(message);
-                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+            if (charger.OperatingMode == 1) {
+                const message = `Charger ${charger.Name} is available!`;
+                console.log(message); // Log to console
+                if (!isSilentHours()) {
+                    await notifySlack(message); // Send to Slack
                 }
-                previousChargerStatuses[charger.Id] = charger.OperatingMode;
             }
         }
     } catch (error) {
@@ -62,14 +60,6 @@ async function checkChargerAvailability() {
 }
 
 async function notifySlack(message) {
-    const currentHour = new Date().getHours();
-
-    // If it's between 17:00 and 06:00, don't send to Slack.
-    if (currentHour >= 17 || currentHour < 6) {
-        console.log("Skipped Slack notification due to current time restrictions.");
-        return;
-    }
-
     try {
         await slackClient.chat.postMessage({
             channel: SLACK_CHANNEL,
@@ -81,22 +71,28 @@ async function notifySlack(message) {
     }
 }
 
-// Main Execution
-(async () => {
-    await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
+function isSilentHours() {
+    const currentHour = new Date().getHours();
+    return currentHour >= 17 || currentHour < 6;
+}
 
-    await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
+async function rotateSlackToken() {
+    try {
+        const newTokenData = await slackClient.oauth.v2.access({
+            client_id: 'YOUR_SLACK_CLIENT_ID',
+            client_secret: 'YOUR_SLACK_CLIENT_SECRET',
+            grant_type: 'refresh_token',
+            refresh_token: SLACK_REFRESH_TOKEN
+        });
 
-    // Check charger availability every 5 minutes
-    setInterval(async () => {
-        await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
-    }, 300000); // 5 minutes
+        slackClient.token = newTokenData.access_token;
+        console.log("Successfully rotated Slack token.");
+    } catch (error) {
+        console.error("Failed to rotate Slack token:", error);
+    }
+}
 
-    // Refresh token every 24 hours
-    setInterval(async () => {
-        await refreshBearerToken().catch(err => console.error("Periodic token refresh failed:", err));
-    }, 86400000); // 24 hours
-
-    console.log("Setting up intervals for checking charger availability and token refresh...");
-    console.log("Zaptec Slack Notifier is now running!");
-})();
+module.exports = {
+    refreshBearerToken,
+    checkChargerAvailability
+};
