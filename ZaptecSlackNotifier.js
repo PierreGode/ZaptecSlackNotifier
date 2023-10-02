@@ -110,8 +110,13 @@ async function notifySlack(message) {
 
     // Refresh token every 24 hours
     setInterval(async () => {
-        await refreshBearerToken().catch(err => console.error("Periodic token refresh failed:", err));
+        await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
     }, 86400000); // 24 hours
+
+        // Rotate Slack token every 9 hours
+    setInterval(async () => {
+        await rotateSlackToken().catch(err => console.error("Periodic Slack token rotation failed:", err));
+    }, 32400000); // 9 hours
 
     console.log("Setting up intervals for checking charger availability and token refresh...");
     console.log("Zaptec Slack Notifier is now running!");
