@@ -10,6 +10,8 @@ sudo apt-get install npm
 npm install axios @slack/web-api
 ```
 Node.js & npm: This is the runtime environment for executing JavaScript code server-side.
+
+Clone this repository
 ```
 git clone https://github.com/PierreGode/ZaptecSlackNotifier.git
 ```
@@ -17,7 +19,7 @@ git clone https://github.com/PierreGode/ZaptecSlackNotifier.git
 cd ZaptecSlackNotifier
 ```
 4. Configuration
-Update node.js (or whatever you named the main script) with the required configurations:
+Update ZaptecSlackNotifier.js with the required configurations:
 
 Zaptec Credentials: These are your username and password for the Zaptec platform.
 ```
