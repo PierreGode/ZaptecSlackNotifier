@@ -18,7 +18,9 @@ let previousChargerStatuses = {};
 
 async function rotateSlackToken() {
     console.log("Attempting to rotate Slack token...");
-    const basicAuth = `Basic ${Buffer.from(`${SLACK_CLIENT_ID}:${SLACK_CLIENT_SECRET}`).toString('base64')}`;
+    
+    // Encode client credentials for Basic Auth
+    const encodedCredentials = Buffer.from(`${SLACK_CLIENT_ID}:${SLACK_CLIENT_SECRET}`).toString('base64');
 
     try {
         const response = await axios.post('https://slack.com/api/oauth.v2.access', {
@@ -26,21 +28,22 @@ async function rotateSlackToken() {
             refresh_token: SLACK_REFRESH_TOKEN
         }, {
             headers: {
-                "Authorization": basicAuth
+                'Authorization': `Basic ${encodedCredentials}`
             }
         });
 
         const refreshedTokenData = response.data;
-
+        
         if (!refreshedTokenData.ok) {
+            console.error("Failed to rotate Slack token. Response from Slack:", refreshedTokenData);
             throw new Error(refreshedTokenData.error);
         }
 
         // Update the Slack client with the new access token
         slackClient.token = refreshedTokenData.access_token;
 
-        // Ideally, update the refresh token in a persistent storage like a database
-        console.log("New Refresh Token:", refreshedTokenData.refresh_token);
+        // Update the stored refresh token with the new one
+        process.env.SLACK_REFRESH_TOKEN = refreshedTokenData.refresh_token;
 
         console.log("Successfully rotated Slack token.");
     } catch (error) {
