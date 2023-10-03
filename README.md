@@ -1,14 +1,6 @@
 # ZaptecSlackNotifier
 Send notifications of availible Zaptec chargers that are availible in your Zaptec account to Slack
 
-Prerequisites
-Before you proceed, ensure you have the following:
-```
-sudo apt-get install npm
-```
-```
-npm install axios @slack/web-api
-```
 Node.js & npm: This is the runtime environment for executing JavaScript code server-side.
 
 Slack application is required.
@@ -20,8 +12,14 @@ git clone https://github.com/PierreGode/ZaptecSlackNotifier.git
 ```
 cd ZaptecSlackNotifier
 ```
-
-Install
+Prerequisites
+Before you proceed, ensure you have the following:
+```
+sudo apt-get install npm
+```
+```
+npm install axios @slack/web-api
+```
 
 ```
 npm install dotenv
