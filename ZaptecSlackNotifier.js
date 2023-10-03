@@ -20,17 +20,13 @@ let previousChargerStatuses = {};
 async function rotateSlackToken() {
     console.log("Attempting to rotate Slack token...");
     try {
-        const result = await slackClient.auth.revoke();
-        console.log("Revoke result:", result);
-        if (result.ok) {
-            const refreshedTokenData = await slackClient.oauth.v2.access({
-                client_id: SLACK_CLIENT_ID,
-                client_secret: SLACK_CLIENT_SECRET,
-                refresh_token: SLACK_REFRESH_TOKEN,
-            });
-            slackClient.token = refreshedTokenData.access_token;
-            console.log("Successfully rotated Slack token.");
-        }
+        const refreshedTokenData = await slackClient.oauth.v2.access({
+            client_id: SLACK_CLIENT_ID,
+            client_secret: SLACK_CLIENT_SECRET,
+            refresh_token: SLACK_REFRESH_TOKEN,
+        });
+        slackClient.token = refreshedTokenData.access_token;
+        console.log("Successfully rotated Slack token.");
     } catch (error) {
         console.error("Failed to rotate Slack token:", error);
     }
