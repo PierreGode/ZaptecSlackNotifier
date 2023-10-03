@@ -133,5 +133,6 @@ async function notifySlack(message) {
 
 module.exports = {
     refreshBearerToken,
-    checkChargerAvailability
+    checkChargerAvailability,
+    rotateSlackToken
 };
