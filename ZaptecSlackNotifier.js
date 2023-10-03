@@ -6,12 +6,8 @@ require('dotenv').config();
 const USERNAME = process.env.ZAPTEC_USERNAME;
 const PASSWORD = process.env.ZAPTEC_PASSWORD;
 const INITIAL_SLACK_TOKEN = process.env.INITIAL_SLACK_TOKEN;
-const SLACK_REFRESH_TOKEN = process.env.SLACK_REFRESH_TOKEN;
-const SLACK_CHANNEL = process.env.SLACK_CHANNEL;
-const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
-const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
-const slackClient = new WebClient(INITIAL_SLACK_TOKEN);
+const SLACK_TOKEN = process.env.SLACK_TOKEN;
+const slackClient = new WebClient(SLACK_TOKEN);
 
 let bearerToken;
 let previousChargerStatuses = {};
@@ -125,7 +121,6 @@ async function notifySlack(message) {
 }
 
 (async () => {
-    await rotateSlackToken().catch(err => console.error("Initial Slack token rotation failed:", err));
     await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
     await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
 
@@ -137,10 +132,6 @@ async function notifySlack(message) {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
     }, 86400000);
 
-    setInterval(async () => {
-        await rotateSlackToken().catch(err => console.error("Periodic Slack token rotation failed:", err));
-    }, 32400000);
-
     console.log("Setting up intervals for checking charger availability and token refresh...");
     console.log("Zaptec Slack Notifier is now running!");
 })();
@@ -148,5 +139,4 @@ async function notifySlack(message) {
 module.exports = {
     refreshBearerToken,
     checkChargerAvailability,
-    rotateSlackToken
 };
