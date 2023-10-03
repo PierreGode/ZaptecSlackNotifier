@@ -82,12 +82,13 @@ async function checkChargerAvailability() {
         for (let charger of chargers) {
             const previousStatus = previousChargerStatuses[charger.Id];
             if (previousStatus !== charger.OperatingMode) {
+                const chargerName = charger.Name.replace(" Tobii", ""); // Remove " Tobii" from the name
                 if (charger.OperatingMode == 1) {
-                    const message = `:zaptec-free: ${charger.Name} is available!`;
+                    const message = `:zaptec-free: ${chargerName} is available!`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 } else if (charger.OperatingMode == 5) {
-                    const message = `:zaptec-charge-complete: ${charger.Name} has stopped charging.`;
+                    const message = `:zaptec-charge-complete: ${chargerName} has stopped charging.`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 }
