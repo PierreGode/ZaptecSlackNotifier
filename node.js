@@ -7,6 +7,9 @@ const {
 (async () => {
     console.log("Starting Zaptec Slack Notifier...");
 
+    // Rotate the Slack token immediately on startup to ensure a fresh token
+    await rotateSlackToken();
+
     await refreshBearerToken();
 
     console.log("Setting up intervals for checking charger availability, token refresh, and Slack token rotation...");
@@ -21,7 +24,7 @@ const {
         await refreshBearerToken();
     }, 86400000); // 24 hours
 
-    // Rotate Slack token every 23 hours (you can adjust this as per your needs)
+    // Rotate Slack token every 9 hours
     setInterval(async () => {
         await rotateSlackToken();
     }, 32400000); // 9 hours
