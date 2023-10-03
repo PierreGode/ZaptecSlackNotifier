@@ -25,7 +25,14 @@ async function rotateSlackToken() {
             client_secret: SLACK_CLIENT_SECRET,
             refresh_token: SLACK_REFRESH_TOKEN,
         });
+        
         slackClient.token = refreshedTokenData.access_token;
+
+        // If the API returns a new refresh token, update it
+        if (refreshedTokenData.refresh_token) {
+            process.env.SLACK_REFRESH_TOKEN = refreshedTokenData.refresh_token;
+        }
+
         console.log("Successfully rotated Slack token.");
     } catch (error) {
         console.error("Failed to rotate Slack token:", error);
