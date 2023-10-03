@@ -24,10 +24,5 @@ const {
         await refreshBearerToken();
     }, 86400000); // 24 hours
 
-    // Rotate Slack token every 9 hours
-    setInterval(async () => {
-        await rotateSlackToken();
-    }, 32400000); // 9 hours
-
     console.log("Zaptec Slack Notifier is now running!");
 })();
