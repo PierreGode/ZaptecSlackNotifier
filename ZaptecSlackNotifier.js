@@ -102,7 +102,7 @@ async function checkChargerAvailability() {
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
-    if (currentHour >= 16 || currentHour < 6) {
+    if (currentHour >= 23 || currentHour < 6) {
         console.log("Skipped Slack notification due to current time restrictions.");
         return;
     }
