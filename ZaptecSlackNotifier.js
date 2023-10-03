@@ -8,7 +8,7 @@ let bearerToken;
 const INITIAL_SLACK_TOKEN = 'your_slack_token_here'; // Static first-time token
 const SLACK_REFRESH_TOKEN = 'your_slack_refresh_token_here';
 const SLACK_CHANNEL = 'your_slack_channel_id';
-const slackClient = new WebClient(INITIAL_SLACK_TOKEN);
+const SLACK_WEBHOOK_URL = 'your_webhook_url';
 
 let previousChargerStatuses = {};
 
@@ -89,8 +89,7 @@ async function notifySlack(message) {
     }
 
     try {
-        await slackClient.chat.postMessage({
-            channel: SLACK_CHANNEL,
+        await axios.post(SLACK_WEBHOOK_URL, {
             text: message
         });
         console.log("Sent Slack notification:", message);
