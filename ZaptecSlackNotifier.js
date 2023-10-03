@@ -1,6 +1,6 @@
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
-require('dotenv').config(); // Load environment variables from a .env file.
+require('dotenv').config(); 
 
 // Get configuration from environment variables
 const USERNAME = process.env.ZAPTEC_USERNAME;
@@ -11,8 +11,7 @@ const SLACK_CHANNEL = process.env.SLACK_CHANNEL;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
-const slackClient = new WebClient(INITIAL_SLACK_TOKEN); // Instantiate the Slack WebClient
-
+const slackClient = new WebClient(INITIAL_SLACK_TOKEN);
 
 let bearerToken;
 let previousChargerStatuses = {};
@@ -28,7 +27,6 @@ async function rotateSlackToken() {
         
         slackClient.token = refreshedTokenData.access_token;
 
-        // If the API returns a new refresh token, update it
         if (refreshedTokenData.refresh_token) {
             process.env.SLACK_REFRESH_TOKEN = refreshedTokenData.refresh_token;
         }
@@ -78,11 +76,11 @@ async function checkChargerAvailability() {
             const previousStatus = previousChargerStatuses[charger.Id];
             if (previousStatus !== charger.OperatingMode) {
                 if (charger.OperatingMode == 1) {
-                    const message = `:zaptec-free: Charger ${charger.Name} is available!`;
+                    const message = `:zaptec-free: ${charger.Name} is available!`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 } else if (charger.OperatingMode == 5) {
-                    const message = `:zaptec-charge-complete: Charger ${charger.Name} has stopped charging.`;
+                    const message = `:zaptec-charge-complete: ${charger.Name} has stopped charging.`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 }
@@ -96,8 +94,6 @@ async function checkChargerAvailability() {
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
-
-    // If it's between 16:00 and 06:00, don't send to Slack.
     if (currentHour >= 16 || currentHour < 6) {
         console.log("Skipped Slack notification due to current time restrictions.");
         return;
@@ -114,23 +110,23 @@ async function notifySlack(message) {
 }
 
 (async () => {
+    // Rotate Slack token immediately upon starting the application
+    await rotateSlackToken().catch(err => console.error("Initial Slack token rotation failed:", err));
+
     await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
     await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
 
-    // Check charger availability every 5 minutes
     setInterval(async () => {
         await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
-    }, 300000); // 5 minutes
+    }, 300000);
 
-    // Refresh token every 24 hours
     setInterval(async () => {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
-    }, 86400000); // 24 hours
+    }, 86400000);
 
-    // Rotate Slack token every 9 hours
     setInterval(async () => {
         await rotateSlackToken().catch(err => console.error("Periodic Slack token rotation failed:", err));
-    }, 32400000); // 9 hours
+    }, 32400000);
 
     console.log("Setting up intervals for checking charger availability and token refresh...");
     console.log("Zaptec Slack Notifier is now running!");
