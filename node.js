@@ -8,7 +8,7 @@ const {
     console.log("Starting Zaptec Slack Notifier...");
 
     // Rotate the Slack token immediately on startup to ensure a fresh token
-    await rotateSlackToken();
+   // await rotateSlackToken();
 
     await refreshBearerToken();
 
