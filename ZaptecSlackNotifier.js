@@ -1,6 +1,6 @@
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
-require('dotenv').config(); 
+require('dotenv').config();
 
 // Get configuration from environment variables
 const USERNAME = process.env.ZAPTEC_USERNAME;
@@ -18,16 +18,20 @@ let previousChargerStatuses = {};
 
 async function rotateSlackToken() {
     console.log("Attempting to rotate Slack token...");
+    const basicAuth = `Basic ${Buffer.from(`${SLACK_CLIENT_ID}:${SLACK_CLIENT_SECRET}`).toString('base64')}`;
+
     try {
         const response = await axios.post('https://slack.com/api/oauth.v2.access', {
-            client_id: SLACK_CLIENT_ID,
-            client_secret: SLACK_CLIENT_SECRET,
             grant_type: 'refresh_token',
             refresh_token: SLACK_REFRESH_TOKEN
+        }, {
+            headers: {
+                "Authorization": basicAuth
+            }
         });
 
         const refreshedTokenData = response.data;
-        
+
         if (!refreshedTokenData.ok) {
             throw new Error(refreshedTokenData.error);
         }
@@ -35,8 +39,8 @@ async function rotateSlackToken() {
         // Update the Slack client with the new access token
         slackClient.token = refreshedTokenData.access_token;
 
-        // Update the stored refresh token with the new one
-        process.env.SLACK_REFRESH_TOKEN = refreshedTokenData.refresh_token;
+        // Ideally, update the refresh token in a persistent storage like a database
+        console.log("New Refresh Token:", refreshedTokenData.refresh_token);
 
         console.log("Successfully rotated Slack token.");
     } catch (error) {
@@ -49,7 +53,7 @@ async function refreshBearerToken() {
     const encodedCredentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
 
     try {
-        let response = await axios.post("https://api.zaptec.com/oauth/token", 
+        const response = await axios.post("https://api.zaptec.com/oauth/token",
             `grant_type=password&username=${encodeURIComponent(USERNAME)}&password=${encodeURIComponent(PASSWORD)}`, {
             headers: {
                 "accept": "application/json",
@@ -69,7 +73,7 @@ async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
     try {
-        let response = await axios.get("https://api.zaptec.com/api/chargers", {
+        const response = await axios.get("https://api.zaptec.com/api/chargers", {
             headers: {
                 "Authorization": `Bearer ${bearerToken}`,
                 "accept": "text/plain"
@@ -118,9 +122,7 @@ async function notifySlack(message) {
 }
 
 (async () => {
-    // Rotate Slack token immediately upon starting the application
     await rotateSlackToken().catch(err => console.error("Initial Slack token rotation failed:", err));
-
     await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
     await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
 
