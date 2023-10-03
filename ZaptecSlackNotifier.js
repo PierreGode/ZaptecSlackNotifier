@@ -1,15 +1,18 @@
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
+require('dotenv').config(); // Load environment variables from a .env file.
 
-const USERNAME = "your_Zaptec_user_here";
-const PASSWORD = "your_Zaptec_password_here";
+// Get configuration from environment variables
+const USERNAME = process.env.ZAPTEC_USERNAME;
+const PASSWORD = process.env.ZAPTEC_PASSWORD;
+const INITIAL_SLACK_TOKEN = process.env.INITIAL_SLACK_TOKEN;
+const SLACK_REFRESH_TOKEN = process.env.SLACK_REFRESH_TOKEN;
+const SLACK_CHANNEL = process.env.SLACK_CHANNEL;
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
+const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
+
 let bearerToken;
-
-const INITIAL_SLACK_TOKEN = 'your_slack_token_here'; // Static first-time token
-const SLACK_REFRESH_TOKEN = 'your_slack_refresh_token_here';
-const SLACK_CHANNEL = 'your_slack_channel_id';
-const SLACK_WEBHOOK_URL = 'your_webhook_url';
-
 let previousChargerStatuses = {};
 
 async function rotateSlackToken() {
@@ -19,8 +22,8 @@ async function rotateSlackToken() {
         console.log("Revoke result:", result);
         if (result.ok) {
             const refreshedTokenData = await slackClient.oauth.v2.access({
-                client_id: 'YOUR_SLACK_CLIENT_ID',
-                client_secret: 'YOUR_SLACK_CLIENT_SECRET',
+                client_id: SLACK_CLIENT_ID,
+                client_secret: SLACK_CLIENT_SECRET,
                 refresh_token: SLACK_REFRESH_TOKEN,
             });
             slackClient.token = refreshedTokenData.access_token;
@@ -36,7 +39,8 @@ async function refreshBearerToken() {
     const encodedCredentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
 
     try {
-        let response = await axios.post("https://api.zaptec.com/oauth/token", `grant_type=password&username=${encodeURIComponent(USERNAME)}&password=${encodeURIComponent(PASSWORD)}`, {
+        let response = await axios.post("https://api.zaptec.com/oauth/token", 
+            `grant_type=password&username=${encodeURIComponent(USERNAME)}&password=${encodeURIComponent(PASSWORD)}`, {
             headers: {
                 "accept": "application/json",
                 "content-type": "application/x-www-form-urlencoded",
@@ -47,7 +51,7 @@ async function refreshBearerToken() {
         bearerToken = response.data.access_token;
         console.log("Successfully refreshed Zaptec bearer token.");
     } catch (error) {
-        console.error("Failed to refresh Zaptec     token:", error);
+        console.error("Failed to refresh Zaptec token:", error);
     }
 }
 
@@ -118,7 +122,7 @@ async function notifySlack(message) {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
     }, 86400000); // 24 hours
 
-        // Rotate Slack token every 9 hours
+    // Rotate Slack token every 9 hours
     setInterval(async () => {
         await rotateSlackToken().catch(err => console.error("Periodic Slack token rotation failed:", err));
     }, 32400000); // 9 hours
