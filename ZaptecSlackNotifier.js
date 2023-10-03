@@ -1,3 +1,4 @@
+// ZaptecSlackNotifier.js
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
 require('dotenv').config(); // Load environment variables from a .env file.
@@ -11,8 +12,8 @@ const SLACK_CHANNEL = process.env.SLACK_CHANNEL;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
-const slackClient = new WebClient(INITIAL_SLACK_TOKEN); // Instantiate the Slack WebClient
 
+const slackClient = new WebClient(INITIAL_SLACK_TOKEN); // Instantiate the Slack WebClient
 
 let bearerToken;
 let previousChargerStatuses = {};
@@ -113,29 +114,7 @@ async function notifySlack(message) {
     }
 }
 
-(async () => {
-    await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
-    await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
-
-    // Check charger availability every 5 minutes
-    setInterval(async () => {
-        await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
-    }, 300000); // 5 minutes
-
-    // Refresh token every 24 hours
-    setInterval(async () => {
-        await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
-    }, 86400000); // 24 hours
-
-    // Rotate Slack token every 9 hours
-    setInterval(async () => {
-        await rotateSlackToken().catch(err => console.error("Periodic Slack token rotation failed:", err));
-    }, 32400000); // 9 hours
-
-    console.log("Setting up intervals for checking charger availability and token refresh...");
-    console.log("Zaptec Slack Notifier is now running!");
-})();
-
+// Exporting functions
 module.exports = {
     refreshBearerToken,
     checkChargerAvailability,
