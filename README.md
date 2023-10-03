@@ -11,6 +11,8 @@ npm install axios @slack/web-api
 ```
 Node.js & npm: This is the runtime environment for executing JavaScript code server-side.
 
+Slack application is required.
+
 Clone this repository
 ```
 git clone https://github.com/PierreGode/ZaptecSlackNotifier.git
@@ -18,21 +20,36 @@ git clone https://github.com/PierreGode/ZaptecSlackNotifier.git
 ```
 cd ZaptecSlackNotifier
 ```
-4. Configuration
-Update ZaptecSlackNotifier.js with the required configurations:
 
-Zaptec Credentials: These are your username and password for the Zaptec platform.
-```
-USERNAME: Your Zaptec username.
-PASSWORD: Your Zaptec password.
-```
-Slack Configuration: These details allow you to send messages to your Slack workspace.
+Install
 
-Slack application is required.
 ```
-SLACK_TOKEN: Your Slack API token. You can get this from Slack API.
-SLACK_CHANNEL: The Slack channel ID where the notifications should be sent.
+npm install dotenv
 ```
+
+Create a .env file: At the root of your project, create a file named .env
+
+Add your secrets/configuration: Inside this file, you can set your environment variables as key-value pairs:
+
+```
+ZAPTEC_USERNAME=myUsername
+ZAPTEC_PASSWORD=myPassword
+INITIAL_SLACK_TOKEN=mySlackToken
+SLACK_REFRESH_TOKEN=myRefreshToken
+SLACK_CHANNEL=mySlackChannel
+SLACK_WEBHOOK_URL=myWebhookURL
+SLACK_CLIENT_ID=myClientID
+SLACK_CLIENT_SECRET=myClientSecret
+```
+Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.
+
+Add .env to .gitignore: This is crucial. The .gitignore file tells Git which files or directories to ignore in a project. By adding .env to .gitignore, you ensure that the .env file is not committed to your repository, keeping your secrets safe. The .gitignore entry would simply look like:
+```
+.env
+```
+By doing this, even if you accidentally try to commit the .env file, Git will ignore it, ensuring that your secrets remain local and are not exposed in the remote repository.
+
+
 
 Running the Notifier
 Once you've set up the configurations, run the notifier using:
@@ -44,6 +61,3 @@ preferably setup an @reboot node /home/user/ZaptecSlackNotifier/node.js in cront
 ZaptecSlackNotifier will send notifications about a charger when it becomes available, updates are pulled every 5 minutes but notifications will not be repeated until the status is changed.
 notifocation is only sent when OperatingMode == 1 and 1 = Charger is available!
 Notifications are silenced after work hours 17-06.
-
-
-
