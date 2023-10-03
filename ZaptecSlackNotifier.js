@@ -68,9 +68,11 @@ async function checkChargerAvailability() {
         for (let charger of chargers) {
             const previousStatus = previousChargerStatuses[charger.Id];
             if (previousStatus !== charger.OperatingMode) {
-                const message = `Charger "${charger.Name}" is available!`;
-                console.log(message);
-                await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                if (charger.OperatingMode == 1) {
+                    const message = `Charger "${charger.Name}" is available!`;
+                    console.log(message);
+                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                }
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
             }
         }
