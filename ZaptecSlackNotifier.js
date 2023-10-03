@@ -11,6 +11,8 @@ const SLACK_CHANNEL = process.env.SLACK_CHANNEL;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
+const slackClient = new WebClient(INITIAL_SLACK_TOKEN); // Instantiate the Slack WebClient
+
 
 let bearerToken;
 let previousChargerStatuses = {};
