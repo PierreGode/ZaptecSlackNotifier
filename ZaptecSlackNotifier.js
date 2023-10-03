@@ -32,11 +32,11 @@ async function rotateSlackToken() {
             throw new Error(refreshedTokenData.error);
         }
 
+        // Update the Slack client with the new access token
         slackClient.token = refreshedTokenData.access_token;
 
-        if (refreshedTokenData.refresh_token) {
-            process.env.SLACK_REFRESH_TOKEN = refreshedTokenData.refresh_token;
-        }
+        // Update the stored refresh token with the new one
+        process.env.SLACK_REFRESH_TOKEN = refreshedTokenData.refresh_token;
 
         console.log("Successfully rotated Slack token.");
     } catch (error) {
