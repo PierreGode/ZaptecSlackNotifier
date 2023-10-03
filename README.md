@@ -38,10 +38,7 @@ ZAPTEC_USERNAME=myUsername
 ZAPTEC_PASSWORD=myPassword
 INITIAL_SLACK_TOKEN=mySlackToken
 SLACK_REFRESH_TOKEN=myRefreshToken
-SLACK_CHANNEL=mySlackChannel
 SLACK_WEBHOOK_URL=myWebhookURL
-SLACK_CLIENT_ID=myClientID
-SLACK_CLIENT_SECRET=myClientSecret
 ```
 Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.
 
