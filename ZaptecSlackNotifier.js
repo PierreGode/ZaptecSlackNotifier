@@ -72,6 +72,10 @@ async function checkChargerAvailability() {
                     const message = `Charger "${charger.Name}" is available!`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                } else if (charger.OperatingMode == 5) {
+                    const message = `Charger "${charger.Name}" has stopped charging.`;
+                    console.log(message);
+                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 }
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
             }
