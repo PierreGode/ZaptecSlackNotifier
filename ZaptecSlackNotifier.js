@@ -37,7 +37,6 @@ async function refreshBearerToken() {
 async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
-    let freeChargersCount = 0; 
     const notifications = [];
     const statusIcons = {
         1: ":zaptec-free:",
@@ -57,33 +56,33 @@ async function checkChargerAvailability() {
         console.log(`Found ${chargers.length} chargers.`);
 
         let allChargerStatuses = ""; 
+        let freeChargersCount = 0;  // Moved inside the try block to reset every time
 
-for (let charger of chargers) {
-    const chargerName = charger.Name.replace(" Tobii", "");
-    const previousStatus = previousChargerStatuses[charger.Id];
+        for (let charger of chargers) {
+            const chargerName = charger.Name.replace(" Tobii", "");
+            const previousStatus = previousChargerStatuses[charger.Id];
 
-    allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
+            allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
 
-    if (previousStatus !== charger.OperatingMode) {
-        if (charger.OperatingMode == 1) {
-            freeChargersCount++;
-            notifications.push(`:zaptec-free: ${chargerName} is available!`);
-        } else if (charger.OperatingMode == 5) {
-            notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
-        } else if (charger.OperatingMode == 3) {
-            const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
-            notifications.push(message);
+            if (previousStatus !== charger.OperatingMode) {
+                if (charger.OperatingMode == 1) {
+                    freeChargersCount++;
+                    notifications.push(`:zaptec-free: ${chargerName} is available!`);
+                } else if (charger.OperatingMode == 5) {
+                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
+                } else if (charger.OperatingMode == 3) {
+                    notifications.push(`:zaptec-charging: ${chargerName} is now in use.`);
+                }
+
+                previousChargerStatuses[charger.Id] = charger.OperatingMode;
+            } else if (charger.OperatingMode == 1) {
+                freeChargersCount++;
+            }
         }
 
-        previousChargerStatuses[charger.Id] = charger.OperatingMode;
-    } else if (charger.OperatingMode == 1) {
-        freeChargersCount++;
-    }
-}
-
-        // Add a summary notification when a charger is taken
-        if (notifications.some(msg => msg.includes(":zaptec-charging:"))) {
-            notifications.push(`:zaptec-free: ${freeChargersCount} charger(s) free.`);
+        const summaryNotification = `:zaptec-free: ${freeChargersCount} charger(s) free.`;
+        if (!notifications.includes(summaryNotification)) {
+            notifications.push(summaryNotification);
         }
 
         for (const message of notifications) {
