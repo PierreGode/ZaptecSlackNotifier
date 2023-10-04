@@ -65,7 +65,7 @@ async function checkChargerAvailability() {
             const previousStatus = previousChargerStatuses[charger.Id];
             
             // Update the status for all chargers
-            allChargerStatuses += `${statusIcons[charger.OperatingMode]} ${chargerName} `;
+            allChargerStatuses += `${statusIcons[charger.OperatingMode]}`;
 
             if (previousStatus !== charger.OperatingMode) {
                 if (charger.OperatingMode == 1) {
