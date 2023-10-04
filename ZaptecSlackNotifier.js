@@ -68,6 +68,8 @@ async function checkChargerAvailability() {
             allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
 
             if (previousStatus !== charger.OperatingMode) {
+                previousChargerStatuses[charger.Id] = charger.OperatingMode; // Update the previous status only when it changes
+
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++; // Increment free charger counter
                 } else if (charger.OperatingMode == 5) {
@@ -78,8 +80,6 @@ async function checkChargerAvailability() {
             } else if (charger.OperatingMode == 1) {
                 freeChargersCount++; // Increment free charger counter for unchanged free status
             }
-
-            previousChargerStatuses[charger.Id] = charger.OperatingMode; // Update the status
         }
 
         if (freeChargersCount > 0) {
@@ -98,6 +98,7 @@ async function checkChargerAvailability() {
         console.error("Failed to fetch charger data:", error);
     }
 }
+
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
