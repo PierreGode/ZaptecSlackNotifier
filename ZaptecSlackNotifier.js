@@ -65,14 +65,14 @@ async function checkChargerAvailability() {
             const previousStatus = previousChargerStatuses[charger.Id];
             
             // Update the status for all chargers
-            allChargerStatuses += `${statusIcons[charger.OperatingMode]}`;
+            allChargerStatuses += `${statusIcons[charger.OperatingMode]} `; // Added a space for separation
 
             if (previousStatus !== charger.OperatingMode) {
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++; // Increment free charger counter
-                    notifications.push(`:zaptec-free: ${chargerName} is available! ${allChargerStatuses}`);
+                    notifications.push(`:zaptec-free: ${chargerName} is available!\n${allChargerStatuses}`);
                 } else if (charger.OperatingMode == 5) {
-                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging. ${allChargerStatuses}`);
+                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.\n${allChargerStatuses}`);
                 } else if (charger.OperatingMode == 3) {
                     notifyFreeSummary = true;
                 }
@@ -84,7 +84,7 @@ async function checkChargerAvailability() {
         }
 
         if (notifyFreeSummary) {
-            notifications.push(`:zaptec-free: ${freeChargersCount} chargers free. ${allChargerStatuses}`);
+            notifications.push(`:zaptec-free: ${freeChargersCount} chargers free.\n${allChargerStatuses}`);
         }
 
         for (const message of notifications) {
@@ -95,6 +95,7 @@ async function checkChargerAvailability() {
         console.error("Failed to fetch charger data:", error);
     }
 }
+
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
