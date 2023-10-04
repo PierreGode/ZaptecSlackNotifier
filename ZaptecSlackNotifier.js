@@ -12,6 +12,7 @@ const slackClient = new WebClient(SLACK_TOKEN);
 
 let bearerToken;
 let previousChargerStatuses = {};
+let previousFreeChargerCount = 0;
 
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
@@ -56,7 +57,7 @@ async function checkChargerAvailability() {
         console.log(`Found ${chargers.length} chargers.`);
 
         let allChargerStatuses = ""; 
-        let freeChargersCount = 0;  // Moved inside the try block to reset every time
+        let freeChargersCount = 0;
 
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
@@ -70,8 +71,6 @@ async function checkChargerAvailability() {
                     notifications.push(`:zaptec-free: ${chargerName} is available!`);
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
-                } else if (charger.OperatingMode == 3) {
-                    notifications.push(`:zaptec-charging: ${chargerName} is now in use.`);
                 }
 
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
@@ -80,9 +79,10 @@ async function checkChargerAvailability() {
             }
         }
 
-        const summaryNotification = `:zaptec-free: ${freeChargersCount} charger(s) free.`;
-        if (!notifications.includes(summaryNotification)) {
-            notifications.push(summaryNotification);
+        // Check if free charger count has changed
+        if (freeChargersCount !== previousFreeChargerCount) {
+            notifications.push(`:zaptec-free: ${freeChargersCount} charger(s) free.`);
+            previousFreeChargerCount = freeChargersCount; // Update the previous free charger count
         }
 
         for (const message of notifications) {
@@ -93,6 +93,7 @@ async function checkChargerAvailability() {
         console.error("Failed to fetch charger data:", error);
     }
 }
+
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
