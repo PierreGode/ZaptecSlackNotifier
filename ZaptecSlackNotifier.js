@@ -74,7 +74,7 @@ async function checkChargerAvailability() {
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
-                    notifications.push(``);
+                    const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
                 }
 
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
