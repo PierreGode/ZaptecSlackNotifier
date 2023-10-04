@@ -6,7 +6,6 @@ require('dotenv').config();
 const USERNAME = process.env.ZAPTEC_USERNAME;
 const PASSWORD = process.env.ZAPTEC_PASSWORD;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-const INITIAL_SLACK_TOKEN = process.env.INITIAL_SLACK_TOKEN;
 const SLACK_TOKEN = process.env.SLACK_TOKEN;
 const slackClient = new WebClient(SLACK_TOKEN);
 
