@@ -58,6 +58,7 @@ async function checkChargerAvailability() {
 
         let allChargerStatuses = ""; 
         let freeChargersCount = 0;
+        let freeChargerNotifications = 0; // Track the number of individual free charger notifications
 
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
@@ -69,8 +70,11 @@ async function checkChargerAvailability() {
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++;
                     notifications.push(`:zaptec-free: ${chargerName} is available!`);
+                    freeChargerNotifications++; // Increment the free charger notifications count
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
+                } else if (charger.OperatingMode == 3) {
+                    notifications.push(`:zaptec-charging: ${chargerName} is now in use.`);
                 }
 
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
@@ -79,10 +83,9 @@ async function checkChargerAvailability() {
             }
         }
 
-        // Check if free charger count has changed
-        if (freeChargersCount !== previousFreeChargerCount) {
+        // Add summary only if no individual free charger notifications were added
+        if (freeChargerNotifications === 0) {
             notifications.push(`:zaptec-free: ${freeChargersCount} charger(s) free.`);
-            previousFreeChargerCount = freeChargersCount; // Update the previous free charger count
         }
 
         for (const message of notifications) {
