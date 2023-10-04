@@ -38,6 +38,7 @@ async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
     let freeChargersCount = 0; // Counter for free chargers
+    let notifyFreeSummary = false; // Flag to notify a summary for OperatingMode 3
 
     try {
         const response = await axios.get("https://api.zaptec.com/api/chargers", {
@@ -50,28 +51,34 @@ async function checkChargerAvailability() {
         const chargers = response.data.Data;
         console.log(`Found ${chargers.length} chargers.`);
 
+        const notifications = [];
+
         for (let charger of chargers) {
             const previousStatus = previousChargerStatuses[charger.Id];
             if (previousStatus !== charger.OperatingMode) {
                 const chargerName = charger.Name.replace(" Tobii", ""); // Remove " Tobii" from the name
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++; // Increment free charger counter
-                    const message = `:zaptec-free: ${chargerName} is available!`;
-                    console.log(message);
-                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                    notifications.push(`:zaptec-free: ${chargerName} is available!`);
                 } else if (charger.OperatingMode == 5) {
-                    const message = `:zaptec-charge-complete: ${chargerName} has stopped charging.`;
-                    console.log(message);
-                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
-                    const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
-                    console.log(message);
-                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                    notifyFreeSummary = true;
                 }
-                previousChargerStatuses[charger.Id] = charger.OperatingMode;
             } else if (charger.OperatingMode == 1) {
                 freeChargersCount++; // Increment free charger counter for unchanged free status
             }
+
+            previousChargerStatuses[charger.Id] = charger.OperatingMode; // Move this line here to ensure we update the statuses correctly
+        }
+
+        if (notifyFreeSummary) {
+            notifications.push(`:zaptec-free: ${freeChargersCount} chargers free.`);
+        }
+
+        for (const message of notifications) {
+            console.log(message);
+            await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
         }
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
