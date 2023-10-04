@@ -1,13 +1,12 @@
 const { 
     refreshBearerToken, 
-    checkChargerAvailability, 
-    rotateSlackToken 
+    checkChargerAvailability,  
 } = require('./ZaptecSlackNotifier.js');
 
 (async () => {
     console.log("Starting Zaptec Slack Notifier...");
    
-    console.log("Setting up intervals for checking charger availability, token refresh, and Slack token rotation...");
+    console.log("Setting up intervals for checking charger availability, token refresh...");
 
     // Check charger availability every 5 minutes
     setInterval(async () => {
