@@ -36,6 +36,8 @@ async function refreshBearerToken() {
 async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
+    let freeChargersCount = 0; // Counter for free chargers
+
     try {
         const response = await axios.get("https://api.zaptec.com/api/chargers", {
             headers: {
@@ -52,6 +54,7 @@ async function checkChargerAvailability() {
             if (previousStatus !== charger.OperatingMode) {
                 const chargerName = charger.Name.replace(" Tobii", ""); // Remove " Tobii" from the name
                 if (charger.OperatingMode == 1) {
+                    freeChargersCount++; // Increment free charger counter
                     const message = `:zaptec-free: ${chargerName} is available!`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
@@ -59,8 +62,14 @@ async function checkChargerAvailability() {
                     const message = `:zaptec-charge-complete: ${chargerName} has stopped charging.`;
                     console.log(message);
                     await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+                } else if (charger.OperatingMode == 3) {
+                    const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
+                    console.log(message);
+                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 }
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
+            } else if (charger.OperatingMode == 1) {
+                freeChargersCount++; // Increment free charger counter for unchanged free status
             }
         }
     } catch (error) {
@@ -70,7 +79,7 @@ async function checkChargerAvailability() {
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
-    if (currentHour >= 16 || currentHour < 6) {
+    if (currentHour >= 16 || currentHour < 7) {
         console.log("Skipped Slack notification due to current time restrictions.");
         return;
     }
