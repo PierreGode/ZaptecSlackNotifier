@@ -63,16 +63,15 @@ async function checkChargerAvailability() {
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", ""); // Remove " Tobii" from the name
             const previousStatus = previousChargerStatuses[charger.Id];
-            
+
             // Update the status for all chargers
-            allChargerStatuses += `${statusIcons[charger.OperatingMode]} `; // Added a space for separation
+            allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
 
             if (previousStatus !== charger.OperatingMode) {
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++; // Increment free charger counter
-                    notifications.push(`:zaptec-free: ${chargerName} is available!\n${allChargerStatuses}`);
                 } else if (charger.OperatingMode == 5) {
-                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.\n${allChargerStatuses}`);
+                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
                     notifyFreeSummary = true;
                 }
@@ -83,19 +82,22 @@ async function checkChargerAvailability() {
             previousChargerStatuses[charger.Id] = charger.OperatingMode; // Update the status
         }
 
+        if (freeChargersCount > 0) {
+            notifications.push(`:zaptec-free: ${freeChargersCount} chargers free.`);
+        }
+
         if (notifyFreeSummary) {
-            notifications.push(`:zaptec-free: ${freeChargersCount} chargers free.\n${allChargerStatuses}`);
+            notifications.push(`:zaptec-free: ${freeChargersCount} chargers free.`);
         }
 
         for (const message of notifications) {
-            console.log(message);
-            await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
+            console.log(message + "\n" + allChargerStatuses);
+            await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
         }
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
     }
 }
-
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
