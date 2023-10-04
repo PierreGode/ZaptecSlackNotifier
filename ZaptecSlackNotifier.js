@@ -35,6 +35,8 @@ async function refreshBearerToken() {
     }
 }
 
+
+
 async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
@@ -58,7 +60,7 @@ async function checkChargerAvailability() {
 
         let allChargerStatuses = ""; 
         let freeChargersCount = 0;
-        let freeChargerNotifications = 0; // Track the number of individual free charger notifications
+        let chargingStatusChanged = false; // new flag
 
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
@@ -70,11 +72,10 @@ async function checkChargerAvailability() {
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++;
                     notifications.push(`:zaptec-free: ${chargerName} is available!`);
-                    freeChargerNotifications++; // Increment the free charger notifications count
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
-                    const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
+                    chargingStatusChanged = true; // set flag to true but don't push a notification yet
                 }
 
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
@@ -83,10 +84,14 @@ async function checkChargerAvailability() {
             }
         }
 
-        // Add summary only if no individual free charger notifications were added
-        if (freeChargerNotifications === 0) {
-            notifications.push(`:zaptec-free: ${freeChargersCount} charger(s) free.`);
+        // If the charging status has changed and the count of free chargers has also changed
+        if (chargingStatusChanged && previousFreeChargerCount !== freeChargersCount) {
+            const summaryMessage = `:zaptec-free: ${freeChargersCount} charger(s) free.`;
+            notifications.push(summaryMessage);
         }
+
+        // Update the previous free charger count for the next cycle
+        previousFreeChargerCount = freeChargersCount;
 
         for (const message of notifications) {
             console.log(message + "\n" + allChargerStatuses);
