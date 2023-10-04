@@ -74,8 +74,9 @@ async function checkChargerAvailability() {
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
-                    notifications.push(`:zaptec-charging: ${chargerName} is now in use.`);
-                }
+                    const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
+                    console.log(message);
+                    await notifySlack(message).catch(err => console.error("Failed to send Slack notification:", err));
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
             } else if (charger.OperatingMode == 1) {
                 freeChargersCount++;
