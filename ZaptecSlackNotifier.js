@@ -58,27 +58,28 @@ async function checkChargerAvailability() {
 
         let allChargerStatuses = ""; 
 
-        for (let charger of chargers) {
-            const chargerName = charger.Name.replace(" Tobii", "");
-            const previousStatus = previousChargerStatuses[charger.Id];
+for (let charger of chargers) {
+    const chargerName = charger.Name.replace(" Tobii", "");
+    const previousStatus = previousChargerStatuses[charger.Id];
 
-            allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
+    allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
 
-            if (previousStatus !== charger.OperatingMode) {
-                if (charger.OperatingMode == 1) {
-                    freeChargersCount++;
-                    notifications.push(`:zaptec-free: ${chargerName} is available!`);
-                } else if (charger.OperatingMode == 5) {
-                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
-                } else if (charger.OperatingMode == 3) {
-                    notifications.push(`:zaptec-charging: ${chargerName} is now in use.`);
-                }
-
-                previousChargerStatuses[charger.Id] = charger.OperatingMode;
-            } else if (charger.OperatingMode == 1) {
-                freeChargersCount++;
-            }
+    if (previousStatus !== charger.OperatingMode) {
+        if (charger.OperatingMode == 1) {
+            freeChargersCount++;
+            notifications.push(`:zaptec-free: ${chargerName} is available!`);
+        } else if (charger.OperatingMode == 5) {
+            notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
+        } else if (charger.OperatingMode == 3) {
+            const message = `:zaptec-free: ${freeChargersCount} chargers free.`;
+            notifications.push(message);
         }
+
+        previousChargerStatuses[charger.Id] = charger.OperatingMode;
+    } else if (charger.OperatingMode == 1) {
+        freeChargersCount++;
+    }
+}
 
         // Add a summary notification when a charger is taken
         if (notifications.some(msg => msg.includes(":zaptec-charging:"))) {
