@@ -8,9 +8,11 @@ Send notifications of availible Zaptec chargers that are availible in your Zapte
 
 Node.js & npm: This is the runtime environment for executing JavaScript code server-side.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
+
 Slack application is required.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
+
 
 Clone this repository
 ```
