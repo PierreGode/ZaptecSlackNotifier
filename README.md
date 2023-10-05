@@ -8,6 +8,8 @@ Node.js & npm: This is the runtime environment for executing JavaScript code ser
 
 Slack application is required.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
+
 Clone this repository
 ```
 git clone https://github.com/PierreGode/ZaptecSlackNotifier.git
