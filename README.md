@@ -1,7 +1,9 @@
 # ZaptecSlackNotifier
-Send notifications of availible Zaptec chargers that are availible in your Zaptec account to Slack
+
 
 ![image](https://github.com/PierreGode/ZaptecSlackNotifier/assets/8579922/2fbaf5bd-3c98-437d-8532-3e7e7f937f0b)
+
+Send notifications of availible Zaptec chargers that are availible in your Zaptec account to Slack
 
 
 Node.js & npm: This is the runtime environment for executing JavaScript code server-side.
