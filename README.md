@@ -43,6 +43,7 @@ SLACK_TOKEN=mySlackToken
 SLACK_WEBHOOK_URL=myWebhookURL
 ```
 Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.
+note that it is never a good practice to store passwords in clear text on a file, this example is to get started locally.
 
 Create a .gitignore file
 ```
