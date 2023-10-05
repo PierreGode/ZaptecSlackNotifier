@@ -11,7 +11,7 @@ const {
     // Check charger availability every 5 minutes
     setInterval(async () => {
         await checkChargerAvailability();
-    }, 300000); // 5 minutes
+    }, 180000); // 3 minutes
 
     // Refresh Zaptec token every 24 hours
     setInterval(async () => {
