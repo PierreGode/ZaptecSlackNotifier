@@ -8,7 +8,7 @@ const {
    
     console.log("Setting up intervals for checking charger availability, token refresh...");
 
-    // Check charger availability every 5 minutes
+    // Check charger availability every 3 minutes
     setInterval(async () => {
         await checkChargerAvailability();
     }, 180000); // 3 minutes
