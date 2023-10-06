@@ -84,10 +84,11 @@ async function checkChargerAvailability() {
         }
 
         // If the charging status has changed and the count of free chargers has also changed
-        if (chargingStatusChanged && previousFreeChargerCount !== freeChargersCount) {
+        if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
             const summaryMessage = `:zaptec-free: ${freeChargersCount} charger(s) free.`;
             notifications.push(summaryMessage);
         }
+
 
         // Update the previous free charger count for the next cycle
         previousFreeChargerCount = freeChargersCount;
