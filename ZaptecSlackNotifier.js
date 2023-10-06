@@ -37,12 +37,17 @@ async function refreshBearerToken() {
 async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
-    const notifications = [];
     const statusIcons = {
         1: ":zaptec-free:",
         3: ":zaptec-charging:",
         5: ":zaptec-charge-complete:"
     };
+
+    let availableChargers = [];
+    let completedChargers = [];
+    let freeChargersCount = 0;
+    let chargingStatusChanged = false;
+    let allChargerStatuses = "";
 
     try {
         const response = await axios.get("https://api.zaptec.com/api/chargers", {
@@ -55,10 +60,6 @@ async function checkChargerAvailability() {
         const chargers = response.data.Data;
         console.log(`Found ${chargers.length} chargers.`);
 
-        let allChargerStatuses = "";
-        let freeChargersCount = 0;
-        let chargingStatusChanged = false;
-
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
             const previousStatus = previousChargerStatuses[charger.Id];
@@ -68,9 +69,9 @@ async function checkChargerAvailability() {
             if (previousStatus !== charger.OperatingMode) {
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++;
-                    notifications.push(`${statusIcons[1]} ${chargerName} is available!`);
+                    availableChargers.push(chargerName);
                 } else if (charger.OperatingMode == 5) {
-                    notifications.push(`${statusIcons[5]} ${chargerName} has stopped charging.`);
+                    completedChargers.push(chargerName);
                 } else if (charger.OperatingMode == 3) {
                     chargingStatusChanged = true;
                 }
@@ -83,15 +84,20 @@ async function checkChargerAvailability() {
 
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
             const summaryMessage = `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
-            notifications.push(summaryMessage);
+            console.log(summaryMessage);
+            await notifySlack(summaryMessage + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
         }
 
-        previousFreeChargerCount = freeChargersCount;
-
-        // Send notification only if it is not initial run
         if (!initialRun) {
-            for (const message of notifications) {
-                console.log(message + "\n" + allChargerStatuses);
+            if (availableChargers.length) {
+                const message = `${statusIcons[1]} ${availableChargers.join(", ")} is/are available!`;
+                console.log(message);
+                await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+            }
+
+            if (completedChargers.length) {
+                const message = `${statusIcons[5]} ${completedChargers.join(", ")} has/have stopped charging.`;
+                console.log(message);
                 await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
             }
         } else {
@@ -99,27 +105,13 @@ async function checkChargerAvailability() {
             initialRun = false;  // Reset the flag after the initial run
         }
 
+        previousFreeChargerCount = freeChargersCount;  // Update the previous free charger count
+
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
     }
 }
 
-async function notifySlack(message) {
-    const currentHour = new Date().getHours();
-    if (currentHour >= 16 || currentHour < 6) {
-        console.log("Skipped Slack notification due to current time restrictions.");
-        return;
-    }
-
-    try {
-        await axios.post(SLACK_WEBHOOK_URL, {
-            text: message
-        });
-        console.log("Sent Slack notification:", message);
-    } catch (error) {
-        console.error("Failed to send Slack notification:", error);
-    }
-}
 
 (async () => {
     await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
