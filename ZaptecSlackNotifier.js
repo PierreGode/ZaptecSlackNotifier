@@ -59,7 +59,6 @@ async function checkChargerAvailability() {
 
         let allChargerStatuses = ""; 
         let freeChargersCount = 0;
-        let chargingStatusChanged = false; // new flag
 
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
@@ -73,22 +72,17 @@ async function checkChargerAvailability() {
                     notifications.push(`:zaptec-free: ${chargerName} is available!`);
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
-                } else if (charger.OperatingMode == 3) {
-                    chargingStatusChanged = true; // set flag to true but don't push a notification yet
-                }
-
+                } 
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
             } else if (charger.OperatingMode == 1) {
                 freeChargersCount++;
             }
         }
 
-        // If the charging status has changed and the count of free chargers has also changed
-        if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
+        if (previousFreeChargerCount > freeChargersCount) {
             const summaryMessage = `:zaptec-free: ${freeChargersCount} charger(s) free.`;
             notifications.push(summaryMessage);
         }
-
 
         // Update the previous free charger count for the next cycle
         previousFreeChargerCount = freeChargersCount;
@@ -101,6 +95,7 @@ async function checkChargerAvailability() {
         console.error("Failed to fetch charger data:", error);
     }
 }
+
 
 
 async function notifySlack(message) {
