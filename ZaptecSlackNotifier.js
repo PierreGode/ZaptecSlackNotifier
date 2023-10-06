@@ -70,9 +70,9 @@ async function checkChargerAvailability() {
             if (previousStatus !== charger.OperatingMode) {
                 if (charger.OperatingMode == 1) {
                     freeChargersCount++;
-                    notifications.push(`:zaptec-free: ${chargerName} is available!`);
+                    notifications.push(`${statusIcons[1]} ${chargerName} is available!`);
                 } else if (charger.OperatingMode == 5) {
-                    notifications.push(`:zaptec-charge-complete: ${chargerName} has stopped charging.`);
+                    notifications.push(`${statusIcons[5]} ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
                     chargingStatusChanged = true; // Set the flag if a charger starts charging
                 }
@@ -85,7 +85,7 @@ async function checkChargerAvailability() {
 
         // Notification condition specific to when a charger is taken
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
-            const summaryMessage = `:zaptec-free: ${freeChargersCount} charger(s) free.`;
+            const summaryMessage = `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
             notifications.push(summaryMessage);
         }
 
