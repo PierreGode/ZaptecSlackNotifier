@@ -57,7 +57,7 @@ async function checkChargerAvailability() {
         const chargers = response.data.Data;
         console.log(`Found ${chargers.length} chargers.`);
 
-        let allChargerStatuses = ""; 
+        let allChargerStatuses = "";
         let freeChargersCount = 0;
         let chargingStatusChanged = false;
 
@@ -74,7 +74,7 @@ async function checkChargerAvailability() {
                 } else if (charger.OperatingMode == 5) {
                     notifications.push(`${statusIcons[5]} ${chargerName} has stopped charging.`);
                 } else if (charger.OperatingMode == 3) {
-                    chargingStatusChanged = true; // Set the flag if a charger starts charging
+                    chargingStatusChanged = true;
                 }
 
                 previousChargerStatuses[charger.Id] = charger.OperatingMode;
@@ -83,13 +83,12 @@ async function checkChargerAvailability() {
             }
         }
 
-        // Notification condition specific to when a charger is taken
+        // If the charging status has changed and the count of free chargers has also decreased
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
             const summaryMessage = `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
             notifications.push(summaryMessage);
         }
 
-        // Update the previous free charger count for the next cycle
         previousFreeChargerCount = freeChargersCount;
 
         for (const message of notifications) {
