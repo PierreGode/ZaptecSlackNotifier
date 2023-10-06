@@ -59,7 +59,7 @@ async function checkChargerAvailability() {
 
         let allChargerStatuses = ""; 
         let freeChargersCount = 0;
-        let chargingStatusChanged = false; // Added flag
+        let chargingStatusChanged = false;
 
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
