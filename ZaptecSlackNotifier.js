@@ -2,7 +2,6 @@ const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
 require('dotenv').config();
 
-// Get configuration from environment variables
 const USERNAME = process.env.ZAPTEC_USERNAME;
 const PASSWORD = process.env.ZAPTEC_PASSWORD;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
@@ -12,6 +11,7 @@ const slackClient = new WebClient(SLACK_TOKEN);
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
+let initialRun = true;  // Add this line to establish a flag for initial run
 
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
@@ -33,8 +33,6 @@ async function refreshBearerToken() {
         console.error("Failed to refresh Zaptec token:", error);
     }
 }
-
-
 
 async function checkChargerAvailability() {
     console.log("Checking charger availability...");
@@ -83,31 +81,28 @@ async function checkChargerAvailability() {
             }
         }
 
-        // If the charging status has changed and the count of free chargers has also decreased
-        // If the charging status has changed and the count of free chargers has also decreased
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
-            let summaryMessage = "";
-
-            if (freeChargersCount === 0) {
-                summaryMessage = "❌ 0 chargers free";
-            } else {
-                summaryMessage = `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
-            }
-
+            const summaryMessage = `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
             notifications.push(summaryMessage);
         }
 
         previousFreeChargerCount = freeChargersCount;
 
-        for (const message of notifications) {
-            console.log(message + "\n" + allChargerStatuses);
-            await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+        // Send notification only if it is not initial run
+        if (!initialRun) {
+            for (const message of notifications) {
+                console.log(message + "\n" + allChargerStatuses);
+                await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+            }
+        } else {
+            console.log("Initial run, notifications are silenced.");
+            initialRun = false;  // Reset the flag after the initial run
         }
+
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
     }
 }
-
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
