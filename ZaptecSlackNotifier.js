@@ -14,7 +14,7 @@ const slackClient = new WebClient(SLACK_TOKEN);
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
-let initialRun = false; // Added to determine if it's the first run
+let initialRun = true; // Added to determine if it's the first run
 
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
