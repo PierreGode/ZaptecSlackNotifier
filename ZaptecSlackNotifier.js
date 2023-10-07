@@ -111,7 +111,7 @@ async function checkChargerAvailability() {
             }
         } else {
             console.log("Initial run, notifications are silenced.");
-            initialRun = true;  // Reset the flag after the initial run
+            initialRun = false;  // Reset the flag after the initial run
         }
 
     } catch (error) {
