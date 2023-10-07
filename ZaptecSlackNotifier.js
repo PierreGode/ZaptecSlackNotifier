@@ -1,6 +1,8 @@
 const axios = require("axios");
 const { WebClient } = require('@slack/web-api');
 require('dotenv').config();
+const config = require('./config');
+
 
 // Get configuration from environment variables
 const USERNAME = process.env.ZAPTEC_USERNAME;
