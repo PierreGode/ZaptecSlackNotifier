@@ -121,8 +121,10 @@ async function checkChargerAvailability() {
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
-    if (currentHour >= 16 || currentHour < 6) {
-        console.log("Skipped Slack notification due to current time restrictions.");
+    const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
+
+    if (currentHour >= config.startSilentHour || currentHour < config.endSilentHour || config.silentDays.includes(currentDay)) {
+        console.log("Skipped Slack notification due to current time or day restrictions.");
         return;
     }
 
