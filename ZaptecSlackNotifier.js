@@ -12,6 +12,7 @@ const slackClient = new WebClient(SLACK_TOKEN);
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
+let initialRun = false; // Added to determine if it's the first run
 
 async function refreshBearerToken() {
     console.log("Attempting to refresh Zaptec bearer token...");
@@ -20,12 +21,13 @@ async function refreshBearerToken() {
     try {
         const response = await axios.post("https://api.zaptec.com/oauth/token",
             `grant_type=password&username=${encodeURIComponent(USERNAME)}&password=${encodeURIComponent(PASSWORD)}`, {
-            headers: {
-                "accept": "application/json",
-                "content-type": "application/x-www-form-urlencoded",
-                "Authorization": `Basic ${encodedCredentials}`
+                headers: {
+                    "accept": "application/json",
+                    "content-type": "application/x-www-form-urlencoded",
+                    "Authorization": `Basic ${encodedCredentials}`
+                }
             }
-        });
+        );
 
         bearerToken = response.data.access_token;
         console.log("Successfully refreshed Zaptec bearer token.");
@@ -34,12 +36,9 @@ async function refreshBearerToken() {
     }
 }
 
-
-
 async function checkChargerAvailability() {
     console.log("Checking charger availability...");
 
-    const notifications = [];
     const statusIcons = {
         1: ":zaptec-free:",
         3: ":zaptec-charging:",
@@ -85,34 +84,32 @@ async function checkChargerAvailability() {
             }
         }
 
-        if (availableChargers.length) {
-            const verb = availableChargers.length === 1 ? "is" : "are";
-            const message = `${statusIcons[1]} ${availableChargers.join(", ")} ${verb} available!`;
-            notifications.push(message);
-        }
-
-        if (completedChargers.length) {
-            const verb = completedChargers.length === 1 ? "has" : "have";
-            const message = `${statusIcons[5]} ${completedChargers.join(", ")} ${verb} stopped charging.`;
-            notifications.push(message);
-        }
-
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
-            const summaryMessage = `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
-            notifications.push(summaryMessage);
+            let summaryMessage = freeChargersCount === 0 ? "❌ 0 chargers free" : `${statusIcons[1]} ${freeChargersCount} charger(s) free.`;
+            console.log(summaryMessage + "\n\n" + allChargerStatuses);
+            await notifySlack(summaryMessage + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
         }
-
-        previousFreeChargerCount = freeChargersCount;
 
         if (!initialRun) {
-            for (const message of notifications) {
-                console.log(message + "\n" + allChargerStatuses);
-                await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+            if (availableChargers.length) {
+                const verb = availableChargers.length === 1 ? "is" : "are";
+                const message = `${statusIcons[1]} ${availableChargers.join(", ")} ${verb} available!`;
+                console.log(message);
+                await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+            }
+
+            if (completedChargers.length) {
+                const verb = completedChargers.length === 1 ? "has" : "have";
+                const message = `${statusIcons[5]} ${completedChargers.join(", ")} ${verb} stopped charging.`;
+                console.log(message);
+                await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
             }
         } else {
             console.log("Initial run, notifications are silenced.");
             initialRun = false;  // Reset the flag after the initial run
         }
+
+        previousFreeChargerCount = freeChargersCount;
 
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
