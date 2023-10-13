@@ -50,13 +50,33 @@ async function refreshBearerToken() {
 async function checkChargerAvailability() {
     logWithTimestamp("Checking charger availability...");
 
-    const statusIcons = {
-        1: "🔌", // charger free to use
-        2: "⭕", // charger authorizing
-        3: "🪫", // 🚓 charger in use, charging
+    const statusIconsCircles = {
+        1: "🟢", // charger free to use
+        2: "🟠", // charger authorizing
+        3: "🟡", // charger in use, charging
+        5: "🔴" // charge complete
+    };
 
+    const statusIconsSlack = {
+        1: ":zaptec-free:",
+        2: ":zaptec-authorizing:",
+        3: ":zaptec-charging:",
+        5: ":zaptec-charge-complete:"
+    };
+
+    const statusIconsEmoji = {
+        1: "🔌", // charger free to use
+        2: "🔐", // charger authorizing
+        3: "🚓", // charger in use, charging
         5: "🔋" // charge complete
     };
+
+    if (config.iconSet == 1)
+        statusIcons = statusIconsCircles;
+    else if (config.iconSet == 2)
+        statusIcons = statusIconsEmoji;
+    else 
+        statusIcons = statusIconsSlack;
 
     let availableChargers = [];
     let completedChargers = [];
