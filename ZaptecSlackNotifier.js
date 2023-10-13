@@ -176,11 +176,11 @@ async function notifySlack(message) {
 
     setInterval(async () => {
         await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
-    }, 5*60*1000);
+    }, config.zaptecUpdateInterval);
 
     setInterval(async () => {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
-    }, 24*60*60*1000);
+    }, config.zaptecTokenRefreshInterval);
 
     logWithTimestamp("Zaptec Slack Notifier is now running!");
 })();
