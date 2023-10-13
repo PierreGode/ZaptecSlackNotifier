@@ -49,7 +49,7 @@ async function checkChargerAvailability() {
 
     const statusIcons = {
         1: ":zaptec-free:",
-        2: "↺",
+        2: "⭕",
         3: ":zaptec-charging:",
         5: ":zaptec-charge-complete:"
     };
