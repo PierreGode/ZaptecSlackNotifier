@@ -55,20 +55,7 @@ COMPANY_NAME= comapany name or word to be removed from status eg api presents yo
 Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.
 note that it is never a good practice to store passwords in clear text on a file, this example is to get started locally.
 
-Create a .gitignore file
-```
-touch .gitignore
-```
-
-Add .env to .gitignore: This is crucial. The .gitignore file tells Git which files or directories to ignore in a project. By adding .env to .gitignore, you ensure that the .env file is not committed to your repository, keeping your secrets safe. The .gitignore entry would simply look like:
-```
-.env
-```
-By doing this, even if you accidentally try to commit the .env file, Git will ignore it, ensuring that your secrets remain local and are not exposed in the remote repository.
-
-
-
-Running the Notifier
+# Running the Notifier
 Once you've set up the configurations, run the notifier using:
 ```
 node node.js
