@@ -18,10 +18,9 @@ let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
 let initialRun = false; // false will silence the first run when starting the service
 function logWithTimestamp(message) {
-    // Create a date object and adjust to Stockholm timezone
-    const stockholmDate = new Date(new Date().toLocaleString('en-US', { timeZone: config.timeZone }));
-    const hours = String(stockholmDate.getHours()).padStart(2, '0');
-    const minutes = String(stockholmDate.getMinutes()).padStart(2, '0');
+    const timeDate = new Date(new Date().toLocaleString('en-US', { timeZone: config.timeZone }));
+    const hours = String(timeDate.getHours()).padStart(2, '0');
+    const minutes = String(timeDate.getMinutes()).padStart(2, '0');
     const timestamp = `${hours}:${minutes}`;
     console.log(`[${timestamp}] ${message}`);
 }
