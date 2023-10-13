@@ -16,7 +16,7 @@ const COMPANY_NAME = process.env.COMPANY_NAME;
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
-let initialRun = !config.loudStart; // false will silence the first run when starting the service. configure in config.js
+let initialRun = true;
 function logWithTimestamp(message) {
     const timeDate = new Date(new Date().toLocaleString('en-US', { timeZone: config.timeZone }));
     const hours = String(timeDate.getHours()).padStart(2, '0');
@@ -124,7 +124,10 @@ async function checkChargerAvailability() {
             await notifySlack(summaryMessage + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
         }
 
-        if (!initialRun) {
+        if (initialRun && config.silentStart) {
+            logWithTimestamp("Initial run, notifications are silenced.");
+        }
+        else {
             if (availableChargers.length) {
                 const verb = availableChargers.length === 1 ? "is" : "are";
                 const message = `${statusIcons[1]} ${availableChargers.join(", ")} ${verb} available!`;
@@ -138,10 +141,8 @@ async function checkChargerAvailability() {
                 console.log(message);
                 await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
             }
-        } else {
-            logWithTimestamp("Initial run, notifications are silenced.");
-            initialRun = false;  // Reset the flag after the initial run
         }
+        initialRun = false;  // Reset the flag after the initial run
 
         previousFreeChargerCount = freeChargersCount;
 
