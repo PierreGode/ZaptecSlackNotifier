@@ -18,7 +18,14 @@ let previousFreeChargerCount = 0;
 let initialRun = false; // Added to determine if it's the first run
 
 function logWithTimestamp(message) {
-    const timestamp = new Date().toISOString();
+    // Create a date object and adjust to Stockholm timezone
+    const stockholmDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Stockholm' }));
+    
+    const hours = String(stockholmDate.getHours()).padStart(2, '0');
+    const minutes = String(stockholmDate.getMinutes()).padStart(2, '0');
+
+    const timestamp = `${hours}:${minutes}`;
+    
     console.log(`[${timestamp}] ${message}`);
 }
 
