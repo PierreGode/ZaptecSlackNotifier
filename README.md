@@ -77,5 +77,5 @@ preferably setup an @reboot sleep 60 && /usr/local/bin/node /home/pi/ZaptecSlack
 
 ZaptecSlackNotifier will send notifications about a charger when it becomes available, updates are pulled every 3 minutes but notifications will not be repeated until the status is changed.
 notifocation is only sent when OperatingMode == 1 and 1 = Charger is available! and OperatingMode == 3 Charger has stopped charging
-Notifications are silenced after work hours 16-06.
+Notifications are silenced after work hours 16-06 and weekends. this can be  configured in config.js 
 //@Created By Pierre Gode
