@@ -16,7 +16,7 @@ const COMPANY_NAME = process.env.COMPANY_NAME;
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
-let initialRun = true; // Added to determine if it's the first run
+let initialRun = false; // false will silence the first run when starting the service
 
 function logWithTimestamp(message) {
     // Create a date object and adjust to Stockholm timezone
