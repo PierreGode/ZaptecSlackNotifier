@@ -16,7 +16,7 @@ const COMPANY_NAME = process.env.COMPANY_NAME;
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
-let initialRun = config.loudStart; // false will silence the first run when starting the service. configure in config.js
+let initialRun = config.silentStart; // true will silence the first run when starting the service. configure in config.js
 function logWithTimestamp(message) {
     const timeDate = new Date(new Date().toLocaleString('en-US', { timeZone: config.timeZone }));
     const hours = String(timeDate.getHours()).padStart(2, '0');
