@@ -76,6 +76,6 @@ node node.js
 preferably setup an @reboot sleep 60 && /usr/local/bin/node /home/pi/ZaptecSlackNotifier/node.js >> /var/log/slack.log 2>&1 in crontab
 
 ZaptecSlackNotifier will send notifications about a charger when it becomes available, updates are pulled every 3 minutes but notifications will not be repeated until the status is changed.
-notifocation is only sent when OperatingMode == 1 and 1 = Charger is available! and OperatingMode == 3 Charger has stopped charging
+notifocation is only sent when OperatingMode == 1 and 1 = Charger is available! and OperatingMode == 3 Charger has stopped charging<p>
 Notifications are silenced after work hours 16-06 and weekends. this can be  configured in config.js 
 //@Created By Pierre Gode
