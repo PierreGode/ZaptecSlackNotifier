@@ -58,16 +58,16 @@ async function checkChargerAvailability() {
     };
 
     const statusIconsSlack = {
-        1: ":zaptec-free:",
-        2: ":zaptec-authorizing:",
-        3: ":zaptec-charging:",
-        5: ":zaptec-charge-complete:"
+        1: ":z-free:",
+        2: ":z-auth:",
+        3: ":z-chrg:",
+        5: ":z-full:"
     };
 
     const statusIconsEmoji = {
         1: "🔌", // charger free to use
         2: "🔐", // charger authorizing
-        3: "🚓", // charger in use, charging
+        3: "🪫", // charger in use, charging
         5: "🔋" // charge complete
     };
 
