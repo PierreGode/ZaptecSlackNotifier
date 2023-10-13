@@ -11,6 +11,7 @@ const PASSWORD = process.env.ZAPTEC_PASSWORD;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 const SLACK_TOKEN = process.env.SLACK_TOKEN;
 const slackClient = new WebClient(SLACK_TOKEN);
+const COMPANY_NAME = process.env.COMPANY_NAME;
 
 let bearerToken;
 let previousChargerStatuses = {};
@@ -79,7 +80,7 @@ async function checkChargerAvailability() {
         logWithTimestamp(`Found ${chargers.length} chargers.`);
 
     for (let charger of chargers) {
-        const chargerName = charger.Name.replace(" Tobii", "");
+        const chargerName = charger.Name.replace(` ${COMPANY_NAME}`, "");
         const previousStatus = previousChargerStatuses[charger.Id];
 
         allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
