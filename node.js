@@ -2,6 +2,7 @@ const {
     refreshBearerToken, 
     checkChargerAvailability,  
 } = require('./ZaptecSlackNotifier.js');
+const config = require('./config');
 
 (async () => {
     console.log("Starting Zaptec Slack Notifier...");
