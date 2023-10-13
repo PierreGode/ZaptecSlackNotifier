@@ -10,7 +10,7 @@ Node.js & npm: This is the runtime environment for executing JavaScript code ser
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
 
-Slack application is required.
+Slack application is required for enterprise version and webhook can be used for personal slack
 
 
 
