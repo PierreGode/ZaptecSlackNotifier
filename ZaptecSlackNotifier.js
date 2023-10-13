@@ -17,8 +17,13 @@ let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
 let initialRun = true; // Added to determine if it's the first run
 
+function logWithTimestamp(message) {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${message}`);
+}
+
 async function refreshBearerToken() {
-    console.log("Attempting to refresh Zaptec bearer token...");
+    logWithTimestamp("Attempting to refresh Zaptec bearer token...");
     const encodedCredentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
 
     try {
@@ -33,14 +38,14 @@ async function refreshBearerToken() {
         );
 
         bearerToken = response.data.access_token;
-        console.log("Successfully refreshed Zaptec bearer token.");
+        logWithTimestamp("Successfully refreshed Zaptec bearer token.");
     } catch (error) {
         console.error("Failed to refresh Zaptec token:", error);
     }
 }
 
 async function checkChargerAvailability() {
-    console.log("Checking charger availability...");
+    logWithTimestamp("Checking charger availability...");
 
     const statusIcons = {
         1: ":zaptec-free:",
@@ -63,7 +68,7 @@ async function checkChargerAvailability() {
         });
 
         const chargers = response.data.Data;
-        console.log(`Found ${chargers.length} chargers.`);
+        logWithTimestamp(`Found ${chargers.length} chargers.`);
 
         for (let charger of chargers) {
             const chargerName = charger.Name.replace(" Tobii", "");
@@ -108,7 +113,7 @@ async function checkChargerAvailability() {
                 await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
             }
         } else {
-            console.log("Initial run, notifications are silenced.");
+            logWithTimestamp("Initial run, notifications are silenced.");
             initialRun = false;  // Reset the flag after the initial run
         }
 
@@ -124,7 +129,7 @@ async function notifySlack(message) {
     const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
 
     if (currentHour >= config.startSilentHour || currentHour < config.endSilentHour || config.silentDays.includes(currentDay)) {
-        console.log("Skipped Slack notification due to current time or day restrictions.");
+        logWithTimestamp("Skipped Slack notification due to current time or day restrictions.");
         return;
     }
 
@@ -132,7 +137,7 @@ async function notifySlack(message) {
         await axios.post(SLACK_WEBHOOK_URL, {
             text: message
         });
-        console.log("Sent Slack notification:", message);
+        logWithTimestamp("Sent Slack notification:", message);
     } catch (error) {
         console.error("Failed to send Slack notification:", error);
     }
@@ -150,8 +155,7 @@ async function notifySlack(message) {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
     }, 86400000);
 
-    console.log("Setting up intervals for checking charger availability and token refresh...");
-    console.log("Zaptec Slack Notifier is now running!");
+    logWithTimestamp("Zaptec Slack Notifier is now running!");
 })();
 
 module.exports = {
