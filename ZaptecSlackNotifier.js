@@ -15,7 +15,7 @@ const slackClient = new WebClient(SLACK_TOKEN);
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
-let initialRun = true; // Added to determine if it's the first run
+let initialRun = false; // Added to determine if it's the first run
 
 function logWithTimestamp(message) {
     const timestamp = new Date().toISOString();
