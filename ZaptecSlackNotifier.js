@@ -16,7 +16,7 @@ const COMPANY_NAME = process.env.COMPANY_NAME;
 let bearerToken;
 let previousChargerStatuses = {};
 let previousFreeChargerCount = 0;
-let initialRun = config.loudStart; // false will silence the first run when starting the service. configure in config.js
+let initialRun = !config.loudStart; // false will silence the first run when starting the service. configure in config.js
 function logWithTimestamp(message) {
     const timeDate = new Date(new Date().toLocaleString('en-US', { timeZone: config.timeZone }));
     const hours = String(timeDate.getHours()).padStart(2, '0');
@@ -51,10 +51,11 @@ async function checkChargerAvailability() {
     logWithTimestamp("Checking charger availability...");
 
     const statusIcons = {
-        1: ":zaptec-free:",
-        2: "⭕",
-        3: ":zaptec-charging:",
-        5: ":zaptec-charge-complete:"
+        1: "🔌", // charger free to use
+        2: "⭕", // charger authorizing
+        3: "🪫", // 🚓 charger in use, charging
+
+        5: "🔋" // charge complete
     };
 
     let availableChargers = [];
@@ -154,11 +155,11 @@ async function notifySlack(message) {
 
     setInterval(async () => {
         await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
-    }, 300000);
+    }, 5*60*1000);
 
     setInterval(async () => {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
-    }, 86400000);
+    }, 24*60*60*1000);
 
     logWithTimestamp("Zaptec Slack Notifier is now running!");
 })();
