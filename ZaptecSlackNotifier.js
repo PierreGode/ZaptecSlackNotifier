@@ -15,6 +15,7 @@ const COMPANY_NAME = process.env.COMPANY_NAME;
 
 let bearerToken;
 let previousChargerStatuses = {};
+let previousChargeHistory = []; 
 let previousFreeChargerCount = 0;
 let initialRun = true;
 function logWithTimestamp(message) {
@@ -139,7 +140,7 @@ async function checkChargerAvailability() {
                 const verb = completedChargers.length === 1 ? "has" : "have";
                 const message = `${statusIcons[5]} ${completedChargers.join(", ")} ${verb} stopped charging.`;
                 console.log(message);
-                await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+                await notifySlack(message + "\n\n" + allChargerStatuses + "\n").catch(err => console.error("Failed to send Slack notification:", err));
             }
         }
         initialRun = false;  // Reset the flag after the initial run
@@ -151,11 +152,88 @@ async function checkChargerAvailability() {
     }
 }
 
+
+let lastChargeDate;  // Add this line at the top of your script, outside any function.
+
+async function getChargeHistory() {
+    logWithTimestamp("Fetching charge history...");
+
+    try {
+        const response = await axios.get("https://api.zaptec.com/api/chargehistory", {
+            headers: {
+                "Authorization": `Bearer ${bearerToken}`,
+                "accept": "application/json"
+            }
+        });
+
+        const currentChargeHistory = response.data.Data;  
+
+        // If this is the initial run or the charge history has changed since the last run
+        if (!lastChargeDate || (lastChargeDate && lastChargeDate !== currentChargeHistory[0].StartDateTime)) {
+
+            // Update the last charge date
+            lastChargeDate = currentChargeHistory[0].StartDateTime;
+
+            let historyEntries = Math.min(currentChargeHistory.length, 1);
+            for (let i = 0; i < historyEntries; i++) {
+                const charge = currentChargeHistory[i];
+
+                // Convert StartDateTime to a JavaScript Date object and adjust for timezone difference
+                var startDate = new Date(charge.StartDateTime);
+                startDate.setHours(startDate.getHours() + 2);
+
+                // Convert EndDateTime to a JavaScript Date object and adjust for timezone difference
+                var endDate = new Date(charge.EndDateTime);
+                endDate.setHours(endDate.getHours() + 2);
+
+                // Format the start date and time using 24-hour format
+                const formattedStartDate = new Intl.DateTimeFormat(undefined, {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(startDate);
+
+                // Format the end date and time using 24-hour format
+                const formattedEndDate = new Intl.DateTimeFormat(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(endDate);
+
+                // Log the formatted start and end date and time, and the energy consumed
+                logWithTimestamp(`${formattedStartDate} - ${formattedEndDate}: ${charge.Energy} kWh`);
+                const message = `${formattedStartDate} - ${formattedEndDate}: ${charge.Energy} kWh`;
+
+                if (config.showChargingdata) {
+                    await notifySlack("Your charging session is complete:"  + "\n" + message + "\n\n")
+                    .catch(err => console.error("Failed to send Slack notification:", err));
+                }
+            }
+        }
+
+        previousChargeHistory = currentChargeHistory; // Update the previous charge history
+        logWithTimestamp(`Fetched charge history for ${currentChargeHistory.length} entries.`);
+
+    } catch (error) {
+        console.error("Failed to fetch charge history:", error);
+    }
+}
+
+
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
     const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
 
-    if (currentHour >= config.startSilentHour || currentHour < config.endSilentHour || config.silentDays.includes(currentDay)) {
+    // Determine whether we should silence the notification
+    const isWithinSilentHours = (config.startSilentHour < config.endSilentHour)
+        ? (currentHour >= config.startSilentHour && currentHour < config.endSilentHour)
+        : (currentHour >= config.startSilentHour || currentHour < config.endSilentHour);
+
+    const isSilentDay = config.silentDays.includes(currentDay);
+
+    if (isWithinSilentHours || isSilentDay) {
         logWithTimestamp("Skipped Slack notification due to current time or day restrictions.");
         return;
     }
@@ -170,13 +248,19 @@ async function notifySlack(message) {
     }
 }
 
+
 (async () => {
     await refreshBearerToken().catch(err => console.error("Initial token refresh failed:", err));
     await checkChargerAvailability().catch(err => console.error("Initial charger check failed:", err));
+    await getChargeHistory().catch(err => console.error("Initial charge history fetch failed:", err)); 
 
     setInterval(async () => {
         await checkChargerAvailability().catch(err => console.error("Periodic charger check failed:", err));
     }, config.zaptecUpdateInterval);
+
+    setInterval(async () => {
+        await getChargeHistory().catch(err => console.error("Periodic charge history fetch failed:", err)); 
+    }, config.zaptecUpdateInterval); 
 
     setInterval(async () => {
         await refreshBearerToken().catch(err => console.error("Periodic Zaptec token refresh failed:", err));
@@ -188,5 +272,6 @@ async function notifySlack(message) {
 module.exports = {
     refreshBearerToken,
     checkChargerAvailability,
+    getChargeHistory
 };
 //@Created By Pierre Gode
