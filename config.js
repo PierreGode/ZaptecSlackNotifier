@@ -1,7 +1,7 @@
 module.exports = {
-    startSilentHour: 23,  // Begin silent period at 16:00 (4 PM)
-    endSilentHour: 6,    // End silent period at 6:00 (6 AM)
-    silentDays: ['Friday', 'Sunday'], // No notifications on assigned days
+    startSilentHour: 12,  // Begin silent period at 16:00 (4 PM)
+    endSilentHour: 13,    // End silent period at 6:00 (6 AM)
+    silentDays: ['Friday', 'Monday'], // No notifications on assigned days
     timeZone: 'Europe/Stockholm', // Set timezone for logging
     zaptecUpdateInterval: 3*60*1000, // 3 min, the time in milliseconds between api calls to Zaptec portal
     zaptecTokenRefreshInterval: 24*60*60*1000, // 24h
