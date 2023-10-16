@@ -46,14 +46,18 @@ Add your secrets/configuration: Inside this file, you can set your environment v
 ```
 ZAPTEC_USERNAME=myUsername
 ZAPTEC_PASSWORD=myPassword
-SLACK_TOKEN=mySlackToken
+SLACKBOT_NAME=ZaptecBot
+SLACKBOT_ICON=https://raw.githubusercontent.com/PierreGode/ZaptecSlackNotifier/2b1f8830cd258a5f73a67ece179bbba17b4332de/images/zaptec.png
 SLACK_WEBHOOK_URL=myWebhookURL
+SLACK_WEBHOOK_PRIVATE_URL=myPrivateWebhookURL
 COMPANY_NAME=word
 ```
 
 COMPANY_NAME= comapany name or word to be removed from status eg api presents your chargers as company 01 company 02 company 03 company 04 you can remove the word company by adding it to .env COMPANY_NAME=company and the result will be 01 02 03 04<p>
 Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.
 note that it is never a good practice to store passwords in clear text on a file, this example is to get started locally.
+SLACK_WEBHOOK_PRIVATE_URL= can be used to post charge complete notifications to another channel (private message) than normal charge station update notifications. If not configured, all notifications will be sent to the SLACK_WEBHOOK_URL.
+SLACKBOT_ICON / SLACKBOT_NAME allows you to control the appearance of the messages from the app instead of having to do it in the slack setup.
 
 ## Running the Notifier
 Once you've set up the configurations, run the notifier using:
@@ -64,5 +68,5 @@ preferably setup an @reboot sleep 60 && /usr/local/bin/node /home/pi/ZaptecSlack
 
 ZaptecSlackNotifier will send notifications about a charger when it becomes available, updates are pulled every 5 minutes but notifications will not be repeated until the status is changed.
 notifocation is only sent when OperatingMode == 1 and 1 = Charger is available! and OperatingMode == 3 Charger has stopped charging<p>
-Notifications are silenced after work hours 16-06 and weekends. this can be  configured in config.js<p>
+Notifications are silenced after work hours 16-06 and weekends. This can be configured in config.js<p>
 //@Created By Pierre Gode
