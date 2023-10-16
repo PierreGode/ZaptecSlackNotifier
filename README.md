@@ -54,7 +54,7 @@ COMPANY_NAME=word
 ```
 
 COMPANY_NAME= comapany name or word to be removed from status eg api presents your chargers as company 01 company 02 company 03 company 04 you can remove the word company by adding it to .env COMPANY_NAME=company and the result will be 01 02 03 04<p>
-Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.
+Access in code: With the help of libraries like dotenv, you can easily load these variables into your application's environment. For Node.js applications, after setting up dotenv, you can access these variables using process.env.VARIABLE_NAME.<p>
 note that it is never a good practice to store passwords in clear text on a file, this example is to get started locally.
 SLACK_WEBHOOK_PRIVATE_URL= can be used to post charge complete notifications to another channel (private message) than normal charge station update notifications. If not configured, all notifications will be sent to the SLACK_WEBHOOK_URL.
 SLACKBOT_ICON / SLACKBOT_NAME allows you to control the appearance of the messages from the app instead of having to do it in the slack setup.
