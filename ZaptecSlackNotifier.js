@@ -9,13 +9,16 @@ const config = require('./config');
 const USERNAME = process.env.ZAPTEC_USERNAME;
 const PASSWORD = process.env.ZAPTEC_PASSWORD;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+const SLACK_WEBHOOK_PRIVATE_URL = process.env.SLACK_WEBHOOK_PRIVATE_URL;
+const SLACKBOT_NAME = process.env.SLACKBOT_NAME;
+const SLACKBOT_ICON = process.env.SLACKBOT_ICON;
 const SLACK_TOKEN = process.env.SLACK_TOKEN;
 const slackClient = new WebClient(SLACK_TOKEN);
 const COMPANY_NAME = process.env.COMPANY_NAME;
 
 let bearerToken;
 let previousChargerStatuses = {};
-let previousChargeHistory = []; 
+
 let previousFreeChargerCount = 0;
 let initialRun = true;
 function logWithTimestamp(message) {
@@ -50,6 +53,14 @@ async function refreshBearerToken() {
 
 async function checkChargerAvailability() {
     logWithTimestamp("Checking charger availability...");
+
+        /* Operating modes
+        0 = Unknown
+        1 = Disconnected
+        2 = Connected_Requesting
+        3 = Connected_Charging
+        5 = Connected_Finished
+        */
 
     const statusIconsCircles = {
         1: "🟢", // charger free to use
@@ -96,28 +107,28 @@ async function checkChargerAvailability() {
         const chargers = response.data.Data;
         logWithTimestamp(`Found ${chargers.length} chargers.`);
 
-    for (let charger of chargers) {
-        const chargerName = charger.Name.replace(` ${COMPANY_NAME}`, "");
-        const previousStatus = previousChargerStatuses[charger.Id];
+        for (let charger of chargers) {
+            const chargerName = charger.Name.replace(` ${COMPANY_NAME}`, "");
+            const previousStatus = previousChargerStatuses[charger.Id];
 
-        allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
+            allChargerStatuses += `${statusIcons[charger.OperatingMode]} `;
 
-        if (previousStatus !== charger.OperatingMode) {
             if (charger.OperatingMode == 1) {
                 freeChargersCount++;
-                availableChargers.push(chargerName);
-            } else if (charger.OperatingMode == 2) { 
-            } else if (charger.OperatingMode == 5) {
-                completedChargers.push(chargerName);
-            } else if (charger.OperatingMode == 3) {
-                chargingStatusChanged = true;
             }
 
-            previousChargerStatuses[charger.Id] = charger.OperatingMode;
-        } else if (charger.OperatingMode == 1) {
-            freeChargersCount++;
+            if (previousStatus !== charger.OperatingMode) {
+                if (charger.OperatingMode == 1) {
+                    availableChargers.push(chargerName);
+                } else if (charger.OperatingMode == 2) { 
+                } else if (charger.OperatingMode == 5) {
+                    completedChargers.push(chargerName);
+                } else if (charger.OperatingMode == 3) {
+                    chargingStatusChanged = true;
+                }
+                previousChargerStatuses[charger.Id] = charger.OperatingMode;
+            }
         }
-    }
 
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
             let summaryMessage = freeChargersCount === 0 ? "❌ 0 chargers available" : `${statusIcons[1]} ${freeChargersCount} charger(s) available.`;
@@ -127,35 +138,34 @@ async function checkChargerAvailability() {
 
         if (initialRun && config.silentStart) {
             logWithTimestamp("Initial run, notifications are silenced.");
-        }
-        else {
+        } else {
             if (availableChargers.length) {
                 const verb = availableChargers.length === 1 ? "is" : "are";
                 const message = `${statusIcons[1]} ${availableChargers.join(", ")} ${verb} available!`;
-                console.log(message);
                 await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
             }
 
             if (completedChargers.length) {
                 const verb = completedChargers.length === 1 ? "has" : "have";
                 const message = `${statusIcons[5]} ${completedChargers.join(", ")} ${verb} stopped charging.`;
-                console.log(message);
-                await notifySlack(message + "\n\n" + allChargerStatuses + "\n").catch(err => console.error("Failed to send Slack notification:", err));
+                await notifySlack(message + "\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
             }
         }
         initialRun = false;  // Reset the flag after the initial run
 
         previousFreeChargerCount = freeChargersCount;
-
     } catch (error) {
         console.error("Failed to fetch charger data:", error);
     }
 }
 
 
-let lastChargeDate;  // Add this line at the top of your script, outside any function.
+let lastChargeDate;  
 
 async function getChargeHistory() {
+    if (!config.showChargingdata)
+        return;
+
     logWithTimestamp("Fetching charge history...");
 
     try {
@@ -169,58 +179,67 @@ async function getChargeHistory() {
         const currentChargeHistory = response.data.Data;  
 
         // If this is the initial run or the charge history has changed since the last run
-        if (!lastChargeDate || (lastChargeDate && lastChargeDate !== currentChargeHistory[0].StartDateTime)) {
+        if (currentChargeHistory.length > 0 && 
+            (!lastChargeDate || lastChargeDate !== currentChargeHistory[0].StartDateTime)) {
+            logWithTimestamp(`Fetched charge history for ${currentChargeHistory.length} entries.`);
+            lastCharge = currentChargeHistory[0];
 
-            // Update the last charge date
-            lastChargeDate = currentChargeHistory[0].StartDateTime;
+            var startDate = new Date(lastCharge.StartDateTime + "Z");
+            var endDate = new Date(lastCharge.EndDateTime + "Z");
 
-            let historyEntries = Math.min(currentChargeHistory.length, 1);
-            for (let i = 0; i < historyEntries; i++) {
-                const charge = currentChargeHistory[i];
+            // Format the start date and time using 24-hour format
+            const formattedStartDate = new Intl.DateTimeFormat(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).format(startDate);
 
-                // Convert StartDateTime to a JavaScript Date object and adjust for timezone difference
-                var startDate = new Date(charge.StartDateTime);
-                startDate.setHours(startDate.getHours() + 2);
+            // Format the end date and time using 24-hour format
+            const formattedEndDate = new Intl.DateTimeFormat(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).format(endDate);
 
-                // Convert EndDateTime to a JavaScript Date object and adjust for timezone difference
-                var endDate = new Date(charge.EndDateTime);
-                endDate.setHours(endDate.getHours() + 2);
+            let chargeTime = (endDate-startDate)/1000/60;
+            let chargeTimeStr = `${(chargeTime/60).toFixed(0)}h ${(chargeTime%60).toFixed(0)}m`;
+            let avgChargePower = (lastCharge.Energy/(chargeTime/60));
 
-                // Format the start date and time using 24-hour format
-                const formattedStartDate = new Intl.DateTimeFormat(undefined, {
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                }).format(startDate);
+            const message = `* *Duration:* ${(chargeTime/60).toFixed(0)}h ${(chargeTime%60).toFixed(0)}m\n`+
+            `* *Time:* ${formattedStartDate} - ${formattedEndDate}\n`+
+            `* *Energy charged:* ${lastCharge.Energy.toFixed(1)} kWh (avg ${avgChargePower.toFixed(2)} kW)\n`+
+            `* *Charger:* ${lastCharge.DeviceName.replace(` ${COMPANY_NAME}`, "")}\n`+
+            `* *Token:* ${lastCharge.TokenName}\n`+
+            `* *ExternallyEnded:* ${lastCharge.ExternallyEnded}`;
 
-                // Format the end date and time using 24-hour format
-                const formattedEndDate = new Intl.DateTimeFormat(undefined, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                }).format(endDate);
 
-                // Log the formatted start and end date and time, and the energy consumed
-                logWithTimestamp(`${formattedStartDate} - ${formattedEndDate}: ${charge.Energy} kWh`);
-                const message = `${formattedStartDate} - ${formattedEndDate}: ${charge.Energy} kWh`;
-
-                if (config.showChargingdata) {
-                    await notifySlack("Your charging session is complete:"  + "\n" + message + "\n\n")
-                    .catch(err => console.error("Failed to send Slack notification:", err));
-                }
+            if (lastChargeDate || !config.silentStart) {
+                await notifyPersonal("Your charging session is complete:"  + "\n" + message)
+                .catch(err => console.error("Failed to send Slack notification:", err));
             }
+            lastChargeDate = lastCharge.StartDateTime;
         }
-
-        previousChargeHistory = currentChargeHistory; // Update the previous charge history
-        logWithTimestamp(`Fetched charge history for ${currentChargeHistory.length} entries.`);
-
     } catch (error) {
         console.error("Failed to fetch charge history:", error);
     }
 }
 
+async function notifyPersonal(message) {
+    if (!SLACK_WEBHOOK_PRIVATE_URL) {
+        notifySlack(message);
+    } else {
+        try {
+            await axios.post(SLACK_WEBHOOK_PRIVATE_URL, {
+                text: message,
+                icon_url: SLACKBOT_ICON,
+                username: SLACKBOT_NAME
+            });
+            logWithTimestamp("Sent private Slack notification:\n"+ message);
+        } catch (error) {
+            console.error("Failed to send private Slack notification:", error);
+        } 
+    }
+}
 
 async function notifySlack(message) {
     const currentHour = new Date().getHours();
@@ -240,9 +259,11 @@ async function notifySlack(message) {
 
     try {
         await axios.post(SLACK_WEBHOOK_URL, {
-            text: message
+            text: message,
+            icon_url: SLACKBOT_ICON,
+            username: SLACKBOT_NAME
         });
-        logWithTimestamp("Sent Slack notification:", message);
+        logWithTimestamp("Sent Slack notification:\n"+ message);
     } catch (error) {
         console.error("Failed to send Slack notification:", error);
     }
