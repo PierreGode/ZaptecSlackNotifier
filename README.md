@@ -1,7 +1,8 @@
 # ZaptecSlackNotifier
 
 
-![image](https://github.com/PierreGode/ZaptecSlackNotifier/assets/8579922/7e550e8e-4440-43dc-bade-bbb14c89b0db)
+![image](https://github.com/PierreGode/ZaptecSlackNotifier/assets/8579922/badc54dc-ca64-4c54-9ad3-786d857eadc3)
+
 
 
 Send notifications of availible Zaptec chargers that are availible in your Zaptec account to Slack
