@@ -15,6 +15,7 @@ const SLACKBOT_ICON = process.env.SLACKBOT_ICON;
 const SLACK_TOKEN = process.env.SLACK_TOKEN;
 const slackClient = new WebClient(SLACK_TOKEN);
 const COMPANY_NAME = process.env.COMPANY_NAME;
+const EXCLUDE_DEVICES = process.env.EXCLUDE_DEVICES;
 
 let bearerToken;
 let previousChargerStatuses = {};
@@ -107,7 +108,13 @@ async function checkChargerAvailability() {
         const chargers = response.data.Data;
         logWithTimestamp(`Found ${chargers.length} chargers.`);
 
+        var excludedDevices = EXCLUDE_DEVICES.split(',');
         for (let charger of chargers) {
+            if (excludedDevices.includes(charger.Name)) {
+                logWithTimestamp(`Ignoring ${charger.Name}.`);
+                continue;
+            }
+
             const chargerName = charger.Name.replace(` ${COMPANY_NAME}`, "");
             const previousStatus = previousChargerStatuses[charger.Id];
 
@@ -131,7 +138,9 @@ async function checkChargerAvailability() {
         }
 
         if (chargingStatusChanged && previousFreeChargerCount > freeChargersCount) {
-            let summaryMessage = freeChargersCount === 0 ? "❌ 0 chargers available" : `${statusIcons[1]} ${freeChargersCount} charger(s) available.`;
+            let plural_s = freeChargersCount === 1 ? "" : "s";
+            let icon = freeChargersCount === 0 ? "❌" : statusIcons[1];
+            let summaryMessage = `${icon} ${freeChargersCount} charger${plural_s} available.`;
             console.log(summaryMessage + "\n\n" + allChargerStatuses);
             await notifySlack(summaryMessage + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
         }
@@ -140,9 +149,13 @@ async function checkChargerAvailability() {
             logWithTimestamp("Initial run, notifications are silenced.");
         } else {
             if (availableChargers.length) {
+                if (previousFreeChargerCount === 0) {
+                    await notifySlack("!!! CHARGER AVAILABLE !!!").catch(err => console.error("Failed to send Slack notification:", err));
+                }
                 const verb = availableChargers.length === 1 ? "is" : "are";
-                const message = `${statusIcons[1]} ${availableChargers.join(", ")} ${verb} available!`;
+                const message = `${statusIcons[1]} ${availableChargers.join(", ")} ${verb} available!` ;
                 await notifySlack(message + "\n\n" + allChargerStatuses).catch(err => console.error("Failed to send Slack notification:", err));
+
             }
 
             if (completedChargers.length) {

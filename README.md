@@ -54,6 +54,7 @@ SLACK_WEBHOOK_URL=myWebhookURL
 SLACK_TOKEN=BotUserOAuthToken
 SLACK_WEBHOOK_PRIVATE_URL=myPrivateWebhookURL
 COMPANY_NAME=word
+EXCLUDE_DEVICES=devicename1,devicename2
 ```
 
 COMPANY_NAME= comapany name or word to be removed from status eg api presents your chargers as company 01 company 02 company 03 company 04 you can remove the word company by adding it to .env COMPANY_NAME=company and the result will be 01 02 03 04<p>
@@ -61,6 +62,7 @@ Access in code: With the help of libraries like dotenv, you can easily load thes
 note that it is never a good practice to store passwords in clear text on a file, this example is to get started locally.
 SLACK_WEBHOOK_PRIVATE_URL= can be used to post charge complete notifications to another channel (private message) than normal charge station update notifications. If not configured, all notifications will be sent to the SLACK_WEBHOOK_URL.
 SLACKBOT_ICON / SLACKBOT_NAME allows you to control the appearance of the messages from the app instead of having to do it in the slack setup.
+EXCLUDE_DEVICES= can be used to ignore devices that you have access to, but don't want to have included in the slack notifications
 
 ## Running the Notifier
 Once you've set up the configurations, run the notifier using:
